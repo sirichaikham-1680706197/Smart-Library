@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}จองห้องดูหนัง — Smart Library{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="bi bi-ticket-perforated me-2"></i>จองห้องดูหนัง</h1>
+    <p>เลือกหนังและห้องฉายที่ต้องการ</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="glass-card animate-in">
+            <form method="POST" action="{{ url_for('movies.book_room') }}">
+                <div class="mb-3">
+                    <label class="form-label-custom">เลือกภาพยนตร์</label>
+                    <select name="movie_id" class="form-select form-select-custom" required id="movieSelect">
+                        <option value="">-- เลือกภาพยนตร์ --</option>
+                        {% for movie in movies %}
+                        <option value="{{ movie.id }}" data-duration="{{ movie.duration_minutes }}" {% if selected_movie_id == movie.id %}selected{% endif %}>
+                            {{ movie.poster_image }} {{ movie.title }} ({{ movie.duration_minutes }} นาที) ⭐{{ movie.rating }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label-custom">เลือกห้อง</label>
+                    <select name="room_id" class="form-select form-select-custom" required>
+                        <option value="">-- เลือกห้อง --</option>
+                        {% for room in rooms %}
+                        <option value="{{ room.id }}">{{ room.name }} ({{ room.room_type }} — ความจุ {{ room.capacity }} คน)</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label-custom">วันเวลาเริ่มฉาย</label>
+                    <input type="datetime-local" name="start_time" class="form-control form-control-custom" required>
+                </div>
+                <div class="glass-card mb-3" style="background:var(--bg-secondary);">
+                    <p class="mb-0 text-secondary"><i class="bi bi-info-circle me-2"></i>ระบบจะคำนวณเวลาสิ้นสุดอัตโนมัติจากความยาวหนัง + 15 นาที (เตรียมห้อง)</p>
+                </div>
+                <button type="submit" class="btn btn-primary-custom w-100">
+                    <i class="bi bi-check-circle me-2"></i>ยืนยันการจอง
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}My Bookings — Smart Library{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="bi bi-calendar-check me-2"></i>การจองของฉัน</h1>
+    <p>ดูประวัติการยืมหนังสือ จองเกม และจองหนัง</p>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs nav-tabs-custom mb-4" role="tablist">
+    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tabBorrows"><i class="bi bi-book me-1"></i>ยืมหนังสือ <span class="badge bg-secondary ms-1">{{ borrows|length }}</span></a></li>
+    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tabGames"><i class="bi bi-controller me-1"></i>จองเกม <span class="badge bg-secondary ms-1">{{ game_bookings|length }}</span></a></li>
+    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tabMovies"><i class="bi bi-film me-1"></i>จองหนัง <span class="badge bg-secondary ms-1">{{ movie_bookings|length }}</span></a></li>
+    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tabHistory"><i class="bi bi-clock-history me-1"></i>ประวัติดูหนัง <span class="badge bg-secondary ms-1">{{ watch_history|length }}</span></a></li>
+</ul>
+
+<div class="tab-content">
+    <!-- Borrow Requests -->
+    <div class="tab-pane fade show active" id="tabBorrows">
+        {% if borrows %}
+        <div class="table-responsive">
+            <table class="table table-custom">
+                <thead><tr><th>หนังสือ</th><th>ผู้แต่ง</th><th>สถานะ</th><th>วันที่ขอ</th></tr></thead>
+                <tbody>
+                {% for b in borrows %}
+                <tr>
+                    <td><strong>{{ b.title }}</strong></td>
+                    <td>{{ b.author }}</td>
+                    <td><span class="badge-status badge-{{ b.status }}">{{ b.status }}</span></td>
+                    <td>{{ b.created_at[:16] }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5"><i class="bi bi-book" style="font-size:3rem;color:var(--text-muted);"></i><p class="text-secondary mt-2">ยังไม่มีการยืมหนังสือ</p></div>
+        {% endif %}
+    </div>
+
+    <!-- Game Bookings -->
+    <div class="tab-pane fade" id="tabGames">
+        {% if game_bookings %}
+        <div class="table-responsive">
+            <table class="table table-custom">
+                <thead><tr><th>เกม</th><th>โต๊ะ</th><th>เวลา</th><th>สถานะ</th></tr></thead>
+                <tbody>
+                {% for gb in game_bookings %}
+                <tr>
+                    <td><strong>{{ gb.game_name }}</strong></td>
+                    <td>{{ gb.table_name }}</td>
+                    <td>{{ gb.start_time[:16] }} — {{ gb.end_time[11:16] }}</td>
+                    <td><span class="badge-status badge-{{ gb.status }}">{{ gb.status }}</span></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5"><i class="bi bi-controller" style="font-size:3rem;color:var(--text-muted);"></i><p class="text-secondary mt-2">ยังไม่มีการจองเกม</p></div>
+        {% endif %}
+    </div>
+
+    <!-- Movie Bookings -->
+    <div class="tab-pane fade" id="tabMovies">
+        {% if movie_bookings %}
+        <div class="table-responsive">
+            <table class="table table-custom">
+                <thead><tr><th>ภาพยนตร์</th><th>ห้อง</th><th>เวลา</th><th>สถานะ</th></tr></thead>
+                <tbody>
+                {% for mb in movie_bookings %}
+                <tr>
+                    <td><strong>{{ mb.movie_title }}</strong></td>
+                    <td>{{ mb.room_name }}</td>
+                    <td>{{ mb.start_time[:16] }} — {{ mb.end_time[11:16] }}</td>
+                    <td><span class="badge-status badge-{{ mb.status }}">{{ mb.status }}</span></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5"><i class="bi bi-film" style="font-size:3rem;color:var(--text-muted);"></i><p class="text-secondary mt-2">ยังไม่มีการจองหนัง</p></div>
+        {% endif %}
+    </div>
+
+    <!-- Watch History -->
+    <div class="tab-pane fade" id="tabHistory">
+        {% if watch_history %}
+        <div class="table-responsive">
+            <table class="table table-custom">
+                <thead><tr><th>ภาพยนตร์</th><th>ประเภท</th><th>คะแนน</th><th>วันที่ดู</th></tr></thead>
+                <tbody>
+                {% for wh in watch_history %}
+                <tr>
+                    <td><strong>{{ wh.title }}</strong></td>
+                    <td><span class="filter-pill" style="cursor:default;font-size:0.7rem;">{{ wh.genre }}</span></td>
+                    <td>{% if wh.rating %}<span class="rating"><i class="bi bi-star-fill"></i> {{ wh.rating }}/10</span>{% else %}<span class="text-muted">-</span>{% endif %}</td>
+                    <td>{{ wh.watched_at[:16] }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5"><i class="bi bi-clock-history" style="font-size:3rem;color:var(--text-muted);"></i><p class="text-secondary mt-2">ยังไม่มีประวัติการดูหนัง</p></div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

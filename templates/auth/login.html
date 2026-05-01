@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}เข้าสู่ระบบ — Smart Library{% endblock %}
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card animate-in">
+        <h2><i class="bi bi-person-circle me-2"></i>เข้าสู่ระบบ</h2>
+        <p class="auth-subtitle">ยินดีต้อนรับกลับ! กรุณาเข้าสู่ระบบ</p>
+        <form method="POST" action="{{ url_for('auth.login') }}">
+            <div class="mb-3">
+                <label class="form-label-custom">ชื่อผู้ใช้</label>
+                <input type="text" name="username" class="form-control form-control-custom" placeholder="Username" required>
+            </div>
+            <div class="mb-4">
+                <label class="form-label-custom">รหัสผ่าน</label>
+                <input type="password" name="password" class="form-control form-control-custom" placeholder="Password" required>
+            </div>
+            <button type="submit" class="btn btn-primary-custom w-100 mb-3">
+                <i class="bi bi-box-arrow-in-right me-2"></i>เข้าสู่ระบบ
+            </button>
+        </form>
+        <p class="text-center text-secondary mb-0" style="font-size:0.9rem;">
+            ยังไม่มีบัญชี? <a href="{{ url_for('auth.register') }}" class="text-gradient" style="text-decoration:none;font-weight:600;">สมัครสมาชิก</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

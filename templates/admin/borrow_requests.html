@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}คำขอยืมหนังสือ — Admin{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="bi bi-inbox me-2"></i>คำขอยืมหนังสือ</h1>
+    <p>อนุมัติหรือปฏิเสธคำขอยืมหนังสือ</p>
+</div>
+
+<!-- Status Filter -->
+<div class="filter-pills mb-4" style="justify-content:flex-start;">
+    <a href="{{ url_for('admin.borrow_requests') }}" class="filter-pill {% if not status_filter %}active{% endif %}">ทั้งหมด</a>
+    <a href="{{ url_for('admin.borrow_requests', status='pending') }}" class="filter-pill {% if status_filter == 'pending' %}active{% endif %}">⏳ Pending</a>
+    <a href="{{ url_for('admin.borrow_requests', status='approved') }}" class="filter-pill {% if status_filter == 'approved' %}active{% endif %}">✅ Approved</a>
+    <a href="{{ url_for('admin.borrow_requests', status='rejected') }}" class="filter-pill {% if status_filter == 'rejected' %}active{% endif %}">❌ Rejected</a>
+</div>
+
+<div class="glass-card">
+    {% if requests %}
+    <div class="table-responsive">
+        <table class="table table-custom mb-0">
+            <thead>
+                <tr><th>#</th><th>ผู้ใช้</th><th>หนังสือ</th><th>คงเหลือ</th><th>สถานะ</th><th>วันที่</th><th>จัดการ</th></tr>
+            </thead>
+            <tbody>
+            {% for req in requests %}
+            <tr>
+                <td>{{ req.id }}</td>
+                <td><strong>{{ req.username }}</strong></td>
+                <td>{{ req.title }}</td>
+                <td><span class="copies-badge {% if req.copies > 0 %}copies-available{% else %}copies-unavailable{% endif %}">{{ req.copies }}</span></td>
+                <td><span class="badge-status badge-{{ req.status }}">{{ req.status }}</span></td>
+                <td>{{ req.created_at[:16] }}</td>
+                <td>
+                    {% if req.status == 'pending' %}
+                    <form method="POST" action="{{ url_for('admin.approve_borrow', req_id=req.id) }}" class="d-inline">
+                        <button type="submit" class="btn btn-secondary-custom btn-sm-custom me-1" title="อนุมัติ"><i class="bi bi-check-lg"></i></button>
+                    </form>
+                    <form method="POST" action="{{ url_for('admin.reject_borrow', req_id=req.id) }}" class="d-inline">
+                        <button type="submit" class="btn btn-danger-custom btn-sm-custom" title="ปฏิเสธ"><i class="bi bi-x-lg"></i></button>
+                    </form>
+                    {% else %}
+                    <span class="text-muted">—</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-inbox" style="font-size:3rem;color:var(--text-muted);"></i>
+        <p class="text-secondary mt-2">ไม่มีคำขอยืม</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

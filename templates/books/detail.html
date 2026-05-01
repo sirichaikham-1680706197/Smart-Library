@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}{{ book.title }} — Smart Library{% endblock %}
+{% block content %}
+<div class="row py-4">
+    <div class="col-md-4 mb-4">
+        {% if book.cover_image and book.cover_image.startswith('http') %}
+        <img src="{{ book.cover_image }}" class="w-100 rounded-3" alt="{{ book.title }}" style="max-height:500px;object-fit:cover;">
+        {% else %}
+        <div class="card-emoji rounded-3" style="height:400px;font-size:8rem;">📘</div>
+        {% endif %}
+    </div>
+    <div class="col-md-8">
+        <div class="glass-card h-100">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb mb-0" style="font-size:0.85rem;">
+                    <li class="breadcrumb-item"><a href="{{ url_for('books.list_books') }}" class="text-gradient" style="text-decoration:none;">หนังสือ</a></li>
+                    <li class="breadcrumb-item text-secondary active">{{ book.title }}</li>
+                </ol>
+            </nav>
+            <h1 class="mb-2" style="font-weight:800;font-size:1.8rem;">{{ book.title }}</h1>
+            <p class="text-secondary mb-3"><i class="bi bi-person me-1"></i>{{ book.author }}</p>
+            <div class="d-flex gap-2 mb-3 flex-wrap">
+                <span class="filter-pill active" style="cursor:default;">{{ book.category }}</span>
+                <span class="copies-badge {% if book.copies > 0 %}copies-available{% else %}copies-unavailable{% endif %}">
+                    <i class="bi bi-layers me-1"></i> {{ book.copies }} เล่มที่ยืมได้
+                </span>
+            </div>
+            <p class="mb-4" style="color:var(--text-secondary);line-height:1.8;">{{ book.description or 'ไม่มีรายละเอียด' }}</p>
+
+            {% if current_user.is_authenticated %}
+                {% if book.copies > 0 %}
+                    {% if has_pending %}
+                    <button class="btn btn-outline-custom" disabled><i class="bi bi-hourglass me-2"></i>รอการอนุมัติ</button>
+                    {% else %}
+                    <form method="POST" action="{{ url_for('books.borrow', book_id=book.id) }}">
+                        <button type="submit" class="btn btn-primary-custom" onclick="return confirm('ยืนยันการยืมหนังสือเล่มนี้?')">
+                            <i class="bi bi-book me-2"></i>ยืมหนังสือ
+                        </button>
+                    </form>
+                    {% endif %}
+                {% else %}
+                <button class="btn btn-danger-custom" disabled><i class="bi bi-x-circle me-2"></i>หนังสือหมด</button>
+                {% endif %}
+            {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary-custom"><i class="bi bi-box-arrow-in-right me-2"></i>เข้าสู่ระบบเพื่อยืม</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

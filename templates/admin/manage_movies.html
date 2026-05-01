@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}จัดการภาพยนตร์ — Admin{% endblock %}
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap">
+    <div>
+        <h1><i class="bi bi-film me-2"></i>จัดการภาพยนตร์</h1>
+        <p>เพิ่ม แก้ไข ลบภาพยนตร์ในระบบ</p>
+    </div>
+    <button class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#addMovieModal">
+        <i class="bi bi-plus-circle me-2"></i>เพิ่มหนัง
+    </button>
+</div>
+
+<div class="glass-card">
+    <div class="table-responsive">
+        <table class="table table-custom mb-0">
+            <thead><tr><th>#</th><th>ชื่อหนัง</th><th>ประเภท</th><th>ความยาว</th><th>คะแนน</th><th>จัดการ</th></tr></thead>
+            <tbody>
+            {% for movie in movies %}
+            <tr>
+                <td>{{ movie.id }}</td>
+                <td><strong>{{ movie.poster_image }} {{ movie.title }}</strong></td>
+                <td><span class="filter-pill" style="cursor:default;font-size:0.7rem;">{{ movie.genre }}</span></td>
+                <td>{{ movie.duration_minutes }} min</td>
+                <td><span class="rating"><i class="bi bi-star-fill"></i> {{ movie.rating }}</span></td>
+                <td>
+                    <button class="btn btn-outline-custom btn-sm-custom me-1" data-bs-toggle="modal" data-bs-target="#editMovie{{ movie.id }}"><i class="bi bi-pencil"></i></button>
+                    <form method="POST" action="{{ url_for('admin.delete_movie', mid=movie.id) }}" class="d-inline" onsubmit="return confirm('ลบหนังนี้?')">
+                        <button type="submit" class="btn btn-danger-custom btn-sm-custom"><i class="bi bi-trash"></i></button>
+                    </form>
+                </td>
+            </tr>
+            <div class="modal fade" id="editMovie{{ movie.id }}" tabindex="-1">
+                <div class="modal-dialog"><div class="modal-content">
+                    <div class="modal-header"><h5 class="modal-title">แก้ไข: {{ movie.title }}</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                    <form method="POST" action="{{ url_for('admin.edit_movie', mid=movie.id) }}">
+                        <div class="modal-body">
+                            <div class="mb-3"><label class="form-label-custom">ชื่อหนัง</label><input type="text" name="title" class="form-control form-control-custom" value="{{ movie.title }}" required></div>
+                            <div class="mb-3"><label class="form-label-custom">ประเภท</label><input type="text" name="genre" class="form-control form-control-custom" value="{{ movie.genre }}" required></div>
+                            <div class="mb-3"><label class="form-label-custom">รายละเอียด</label><textarea name="description" class="form-control form-control-custom" rows="3">{{ movie.description }}</textarea></div>
+                            <div class="mb-3"><label class="form-label-custom">Emoji Poster</label><input type="text" name="poster_image" class="form-control form-control-custom" value="{{ movie.poster_image }}"></div>
+                            <div class="row"><div class="col-6 mb-3"><label class="form-label-custom">ความยาว (นาที)</label><input type="number" name="duration_minutes" class="form-control form-control-custom" value="{{ movie.duration_minutes }}" min="1"></div><div class="col-6 mb-3"><label class="form-label-custom">คะแนน</label><input type="number" name="rating" class="form-control form-control-custom" value="{{ movie.rating }}" min="0" max="10" step="0.1"></div></div>
+                        </div>
+                        <div class="modal-footer"><button type="submit" class="btn btn-primary-custom">บันทึก</button></div>
+                    </form>
+                </div></div>
+            </div>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Modal -->
+<div class="modal fade" id="addMovieModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>เพิ่มหนัง</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <form method="POST" action="{{ url_for('admin.add_movie') }}">
+            <div class="modal-body">
+                <div class="mb-3"><label class="form-label-custom">ชื่อหนัง</label><input type="text" name="title" class="form-control form-control-custom" required></div>
+                <div class="mb-3"><label class="form-label-custom">ประเภท</label><input type="text" name="genre" class="form-control form-control-custom" required></div>
+                <div class="mb-3"><label class="form-label-custom">รายละเอียด</label><textarea name="description" class="form-control form-control-custom" rows="3"></textarea></div>
+                <div class="mb-3"><label class="form-label-custom">Emoji Poster</label><input type="text" name="poster_image" class="form-control form-control-custom" value="🎬"></div>
+                <div class="row"><div class="col-6 mb-3"><label class="form-label-custom">ความยาว (นาที)</label><input type="number" name="duration_minutes" class="form-control form-control-custom" value="120" min="1"></div><div class="col-6 mb-3"><label class="form-label-custom">คะแนน</label><input type="number" name="rating" class="form-control form-control-custom" value="7.0" min="0" max="10" step="0.1"></div></div>
+            </div>
+            <div class="modal-footer"><button type="submit" class="btn btn-primary-custom">เพิ่มหนัง</button></div>
+        </form>
+    </div></div>
+</div>
+{% endblock %}

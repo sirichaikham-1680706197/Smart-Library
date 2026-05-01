@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}จัดการเกม — Admin{% endblock %}
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap">
+    <div>
+        <h1><i class="bi bi-controller me-2"></i>จัดการเกม</h1>
+        <p>เพิ่ม แก้ไข ลบเกมในระบบ</p>
+    </div>
+    <button class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#addGameModal">
+        <i class="bi bi-plus-circle me-2"></i>เพิ่มเกม
+    </button>
+</div>
+
+<div class="glass-card">
+    <div class="table-responsive">
+        <table class="table table-custom mb-0">
+            <thead><tr><th>#</th><th>ชื่อเกม</th><th>ประเภท</th><th>ผู้เล่น</th><th>จัดการ</th></tr></thead>
+            <tbody>
+            {% for game in games %}
+            <tr>
+                <td>{{ game.id }}</td>
+                <td><strong>{{ game.image }} {{ game.name }}</strong></td>
+                <td><span class="filter-pill" style="cursor:default;font-size:0.7rem;">{{ game.category }}</span></td>
+                <td>{{ game.min_players }}-{{ game.max_players }}</td>
+                <td>
+                    <button class="btn btn-outline-custom btn-sm-custom me-1" data-bs-toggle="modal" data-bs-target="#editGame{{ game.id }}"><i class="bi bi-pencil"></i></button>
+                    <form method="POST" action="{{ url_for('admin.delete_game', gid=game.id) }}" class="d-inline" onsubmit="return confirm('ลบเกมนี้?')">
+                        <button type="submit" class="btn btn-danger-custom btn-sm-custom"><i class="bi bi-trash"></i></button>
+                    </form>
+                </td>
+            </tr>
+            <div class="modal fade" id="editGame{{ game.id }}" tabindex="-1">
+                <div class="modal-dialog"><div class="modal-content">
+                    <div class="modal-header"><h5 class="modal-title">แก้ไข: {{ game.name }}</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                    <form method="POST" action="{{ url_for('admin.edit_game', gid=game.id) }}">
+                        <div class="modal-body">
+                            <div class="mb-3"><label class="form-label-custom">ชื่อเกม</label><input type="text" name="name" class="form-control form-control-custom" value="{{ game.name }}" required></div>
+                            <div class="mb-3"><label class="form-label-custom">ประเภท</label><input type="text" name="category" class="form-control form-control-custom" value="{{ game.category }}" required></div>
+                            <div class="mb-3"><label class="form-label-custom">รายละเอียด</label><textarea name="description" class="form-control form-control-custom" rows="3">{{ game.description }}</textarea></div>
+                            <div class="mb-3"><label class="form-label-custom">Emoji Icon</label><input type="text" name="image" class="form-control form-control-custom" value="{{ game.image }}"></div>
+                            <div class="row"><div class="col-6 mb-3"><label class="form-label-custom">ผู้เล่นขั้นต่ำ</label><input type="number" name="min_players" class="form-control form-control-custom" value="{{ game.min_players }}" min="1"></div><div class="col-6 mb-3"><label class="form-label-custom">ผู้เล่นสูงสุด</label><input type="number" name="max_players" class="form-control form-control-custom" value="{{ game.max_players }}" min="1"></div></div>
+                        </div>
+                        <div class="modal-footer"><button type="submit" class="btn btn-primary-custom">บันทึก</button></div>
+                    </form>
+                </div></div>
+            </div>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Modal -->
+<div class="modal fade" id="addGameModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>เพิ่มเกม</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <form method="POST" action="{{ url_for('admin.add_game') }}">
+            <div class="modal-body">
+                <div class="mb-3"><label class="form-label-custom">ชื่อเกม</label><input type="text" name="name" class="form-control form-control-custom" required></div>
+                <div class="mb-3"><label class="form-label-custom">ประเภท</label><input type="text" name="category" class="form-control form-control-custom" required></div>
+                <div class="mb-3"><label class="form-label-custom">รายละเอียด</label><textarea name="description" class="form-control form-control-custom" rows="3"></textarea></div>
+                <div class="mb-3"><label class="form-label-custom">Emoji Icon</label><input type="text" name="image" class="form-control form-control-custom" value="🎮"></div>
+                <div class="row"><div class="col-6 mb-3"><label class="form-label-custom">ผู้เล่นขั้นต่ำ</label><input type="number" name="min_players" class="form-control form-control-custom" value="2" min="1"></div><div class="col-6 mb-3"><label class="form-label-custom">ผู้เล่นสูงสุด</label><input type="number" name="max_players" class="form-control form-control-custom" value="4" min="1"></div></div>
+            </div>
+            <div class="modal-footer"><button type="submit" class="btn btn-primary-custom">เพิ่มเกม</button></div>
+        </form>
+    </div></div>
+</div>
+{% endblock %}

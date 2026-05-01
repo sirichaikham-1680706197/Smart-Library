@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Smart Digital Library — Home{% endblock %}
+{% block content %}
+<!-- Hero -->
+<section class="hero-section">
+    <h1 class="animate-in">Smart Digital Library</h1>
+    <p class="animate-in animate-delay-1">ยืมหนังสือ จองโต๊ะเกม จองห้องดูหนัง — ทุกอย่างในที่เดียว</p>
+    <div class="hero-actions animate-in animate-delay-2">
+        <a href="{{ url_for('books.list_books') }}" class="btn btn-primary-custom btn-lg"><i class="bi bi-book me-2"></i>สำรวจหนังสือ</a>
+        <a href="{{ url_for('games.list_games') }}" class="btn btn-secondary-custom btn-lg"><i class="bi bi-controller me-2"></i>จองเกม</a>
+        <a href="{{ url_for('movies.list_movies') }}" class="btn btn-outline-custom btn-lg"><i class="bi bi-film me-2"></i>ดูหนัง</a>
+    </div>
+</section>
+
+<!-- Stats -->
+<section class="mb-5">
+    <div class="row g-4">
+        <div class="col-md-4 animate-in animate-delay-1">
+            <div class="stat-card">
+                <div class="stat-icon primary"><i class="bi bi-book"></i></div>
+                <div class="stat-value">{{ stats.books }}</div>
+                <div class="stat-label">หนังสือทั้งหมด</div>
+            </div>
+        </div>
+        <div class="col-md-4 animate-in animate-delay-2">
+            <div class="stat-card">
+                <div class="stat-icon secondary"><i class="bi bi-controller"></i></div>
+                <div class="stat-value">{{ stats.games }}</div>
+                <div class="stat-label">เกมทั้งหมด</div>
+            </div>
+        </div>
+        <div class="col-md-4 animate-in animate-delay-3">
+            <div class="stat-card">
+                <div class="stat-icon warning"><i class="bi bi-film"></i></div>
+                <div class="stat-value">{{ stats.movies }}</div>
+                <div class="stat-label">ภาพยนตร์ทั้งหมด</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Books -->
+<section class="mb-5">
+    <h2 class="section-title"><span class="title-icon">📖</span> หนังสือแนะนำ</h2>
+    <div class="row g-4">
+        {% for book in featured_books %}
+        <div class="col-lg-3 col-md-6">
+            <div class="item-card">
+                {% if book.cover_image and book.cover_image.startswith('http') %}
+                <img src="{{ book.cover_image }}" class="card-img-top" alt="{{ book.title }}" loading="lazy">
+                {% else %}
+                <div class="card-emoji">📘</div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ book.title }}</h5>
+                    <p class="card-text">{{ book.author }}</p>
+                    <span class="copies-badge {% if book.copies > 0 %}copies-available{% else %}copies-unavailable{% endif %}">
+                        <i class="bi bi-layers"></i> {{ book.copies }} copies
+                    </span>
+                </div>
+                <div class="card-footer d-flex justify-content-between align-items-center">
+                    <span class="filter-pill" style="cursor:default">{{ book.category }}</span>
+                    <a href="{{ url_for('books.detail', book_id=book.id) }}" class="btn btn-primary-custom btn-sm-custom">ดูรายละเอียด</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Featured Movies -->
+<section class="mb-5">
+    <h2 class="section-title"><span class="title-icon">🎬</span> ภาพยนตร์ยอดนิยม</h2>
+    <div class="row g-4">
+        {% for movie in featured_movies %}
+        <div class="col-lg-3 col-md-6">
+            <div class="item-card">
+                <div class="card-emoji">{{ movie.poster_image }}</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ movie.title }}</h5>
+                    <p class="card-text">{{ movie.description[:80] }}...</p>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <span class="rating"><i class="bi bi-star-fill"></i> {{ movie.rating }}</span>
+                        <small class="text-secondary">{{ movie.duration_minutes }} min</small>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('movies.book_room', movie_id=movie.id) }}" class="btn btn-secondary-custom btn-sm-custom w-100">
+                        <i class="bi bi-ticket-perforated me-1"></i>จองดูหนัง
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

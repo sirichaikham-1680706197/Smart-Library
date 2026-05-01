@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}จองโต๊ะเกม — Smart Library{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="bi bi-calendar-plus me-2"></i>จองโต๊ะเกม</h1>
+    <p>เลือกเกมและโต๊ะที่ต้องการ</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="glass-card animate-in">
+            <form method="POST" action="{{ url_for('games.book_table') }}">
+                <div class="mb-3">
+                    <label class="form-label-custom">เลือกเกม</label>
+                    <select name="game_id" class="form-select form-select-custom" required>
+                        <option value="">-- เลือกเกม --</option>
+                        {% for game in games %}
+                        <option value="{{ game.id }}" {% if selected_game_id == game.id %}selected{% endif %}>
+                            {{ game.image }} {{ game.name }} ({{ game.min_players }}-{{ game.max_players }} คน)
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label-custom">เลือกโต๊ะ</label>
+                    <select name="table_id" class="form-select form-select-custom" required>
+                        <option value="">-- เลือกโต๊ะ --</option>
+                        {% for table in tables %}
+                        <option value="{{ table.id }}">{{ table.name }} (ความจุ {{ table.capacity }} คน)</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label-custom">วันเวลาเริ่มต้น</label>
+                        <input type="datetime-local" name="start_time" class="form-control form-control-custom" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label-custom">ระยะเวลา (นาที)</label>
+                        <select name="duration" class="form-select form-select-custom">
+                            <option value="30">30 นาที</option>
+                            <option value="60" selected>1 ชั่วโมง</option>
+                            <option value="90">1.5 ชั่วโมง</option>
+                            <option value="120">2 ชั่วโมง</option>
+                            <option value="180">3 ชั่วโมง</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary-custom w-100 mt-4">
+                    <i class="bi bi-check-circle me-2"></i>ยืนยันการจอง
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

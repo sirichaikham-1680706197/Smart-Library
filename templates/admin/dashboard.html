@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard — Smart Library{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="bi bi-shield-lock me-2"></i>Admin Dashboard</h1>
+    <p>ภาพรวมระบบทั้งหมด</p>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-4 mb-5">
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon primary"><i class="bi bi-people"></i></div>
+            <div class="stat-value">{{ stats.users }}</div>
+            <div class="stat-label">ผู้ใช้ทั้งหมด</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon secondary"><i class="bi bi-book"></i></div>
+            <div class="stat-value">{{ stats.books }}</div>
+            <div class="stat-label">หนังสือ</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon warning"><i class="bi bi-hourglass-split"></i></div>
+            <div class="stat-value">{{ stats.pending_borrows }}</div>
+            <div class="stat-label">รอการอนุมัติ</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon danger"><i class="bi bi-calendar-check"></i></div>
+            <div class="stat-value">{{ stats.game_bookings + stats.movie_bookings }}</div>
+            <div class="stat-label">การจองทั้งหมด</div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Links -->
+<div class="row g-4 mb-5">
+    <div class="col-md-3"><a href="{{ url_for('admin.manage_books') }}" class="btn btn-primary-custom w-100 py-3"><i class="bi bi-book me-2"></i>จัดการหนังสือ</a></div>
+    <div class="col-md-3"><a href="{{ url_for('admin.manage_games') }}" class="btn btn-secondary-custom w-100 py-3"><i class="bi bi-controller me-2"></i>จัดการเกม</a></div>
+    <div class="col-md-3"><a href="{{ url_for('admin.manage_movies') }}" class="btn btn-danger-custom w-100 py-3"><i class="bi bi-film me-2"></i>จัดการหนัง</a></div>
+    <div class="col-md-3"><a href="{{ url_for('admin.borrow_requests') }}" class="btn btn-outline-custom w-100 py-3"><i class="bi bi-inbox me-2"></i>คำขอยืม</a></div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="glass-card">
+            <h5 class="mb-3" style="font-weight:700;"><i class="bi bi-book me-2 text-gradient"></i>การยืมล่าสุด</h5>
+            {% if recent_borrows %}
+            <div class="table-responsive">
+                <table class="table table-custom mb-0">
+                    <thead><tr><th>ผู้ใช้</th><th>หนังสือ</th><th>สถานะ</th></tr></thead>
+                    <tbody>
+                    {% for b in recent_borrows %}
+                    <tr><td>{{ b.username }}</td><td>{{ b.title[:25] }}</td><td><span class="badge-status badge-{{ b.status }}">{{ b.status }}</span></td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}<p class="text-secondary">ไม่มีข้อมูล</p>{% endif %}
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="glass-card">
+            <h5 class="mb-3" style="font-weight:700;"><i class="bi bi-controller me-2" style="color:var(--accent-secondary);"></i>จองเกมล่าสุด</h5>
+            {% if recent_game %}
+            <div class="table-responsive">
+                <table class="table table-custom mb-0">
+                    <thead><tr><th>ผู้ใช้</th><th>เกม</th><th>โต๊ะ</th><th>สถานะ</th></tr></thead>
+                    <tbody>
+                    {% for g in recent_game %}
+                    <tr><td>{{ g.username }}</td><td>{{ g.game_name }}</td><td>{{ g.table_name }}</td><td><span class="badge-status badge-{{ g.status }}">{{ g.status }}</span></td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}<p class="text-secondary">ไม่มีข้อมูล</p>{% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-2">
+    <div class="col-12">
+        <div class="glass-card">
+            <h5 class="mb-3" style="font-weight:700;"><i class="bi bi-film me-2" style="color:var(--accent-warning);"></i>จองหนังล่าสุด</h5>
+            {% if recent_movie %}
+            <div class="table-responsive">
+                <table class="table table-custom mb-0">
+                    <thead><tr><th>ผู้ใช้</th><th>ภาพยนตร์</th><th>ห้อง</th><th>เวลา</th><th>สถานะ</th></tr></thead>
+                    <tbody>
+                    {% for m in recent_movie %}
+                    <tr><td>{{ m.username }}</td><td>{{ m.movie_title }}</td><td>{{ m.room_name }}</td><td>{{ m.start_time[:16] }}</td><td><span class="badge-status badge-{{ m.status }}">{{ m.status }}</span></td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}<p class="text-secondary">ไม่มีข้อมูล</p>{% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
