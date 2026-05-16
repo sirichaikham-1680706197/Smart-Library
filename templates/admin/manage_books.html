@@ -11,6 +11,20 @@
     </button>
 </div>
 
+<form method="GET" action="{{ url_for('admin.manage_books') }}" class="mb-4">
+    <div class="row g-3 align-items-end">
+        <div class="col-md-8">
+            <div class="search-bar" style="max-width:100%;margin:0;">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" name="search" class="form-control" placeholder="ค้นหาหนังสือ..." value="{{ search }}">
+            </div>
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary-custom w-100"><i class="bi bi-search me-1"></i>ค้นหา</button>
+        </div>
+    </div>
+</form>
+
 <div class="glass-card">
     <div class="table-responsive">
         <table class="table table-custom mb-0">
@@ -21,7 +35,23 @@
             {% for book in books %}
             <tr>
                 <td>{{ book.id }}</td>
-                <td><strong>{{ book.title }}</strong></td>
+                <td>
+    <div class="d-flex align-items-center gap-2">
+
+        {% if book.cover_image and book.cover_image.startswith('http') %}
+            <img src="{{ book.cover_image }}"
+                 alt="{{ book.title }}"
+                 style="width:50px; height:50px; object-fit:cover; border-radius:8px;">
+        {% else %}
+            <div class="card-emoji" style="font-size:2rem;">
+                {{ book.cover_image if book.cover_image else '📘' }}
+            </div>
+        {% endif %}
+
+        <strong>{{ book.title }}</strong>
+
+    </div>
+</td>
                 <td>{{ book.author }}</td>
                 <td><span class="filter-pill" style="cursor:default;font-size:0.7rem;">{{ book.category }}</span></td>
                 <td><span class="copies-badge {% if book.copies > 0 %}copies-available{% else %}copies-unavailable{% endif %}">{{ book.copies }}</span></td>

@@ -11,6 +11,20 @@
     </button>
 </div>
 
+<form method="GET" action="{{ url_for('admin.manage_movies') }}" class="mb-4">
+    <div class="row g-3 align-items-end">
+        <div class="col-md-8">
+            <div class="search-bar" style="max-width:100%;margin:0;">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" name="search" class="form-control" placeholder="ค้นหาภาพยนตร์..." value="{{ search }}">
+            </div>
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary-custom w-100"><i class="bi bi-search me-1"></i>ค้นหา</button>
+        </div>
+    </div>
+</form>
+
 <div class="glass-card">
     <div class="table-responsive">
         <table class="table table-custom mb-0">
@@ -19,7 +33,23 @@
             {% for movie in movies %}
             <tr>
                 <td>{{ movie.id }}</td>
-                <td><strong>{{ movie.poster_image }} {{ movie.title }}</strong></td>
+                <td>
+    <div class="d-flex align-items-center gap-2">
+
+        {% if movie.poster_image and movie.poster_image.startswith('http') %}
+            <img src="{{ movie.poster_image }}"
+                 alt="{{ movie.title }}"
+                 style="width:50px; height:50px; object-fit:cover; border-radius:8px;">
+        {% else %}
+            <div class="card-emoji" style="font-size:2rem;">
+                {{ movie.poster_image }}
+            </div>
+        {% endif %}
+
+        <strong>{{ movie.title }}</strong>
+
+    </div>
+</td>
                 <td><span class="filter-pill" style="cursor:default;font-size:0.7rem;">{{ movie.genre }}</span></td>
                 <td>{{ movie.duration_minutes }} min</td>
                 <td><span class="rating"><i class="bi bi-star-fill"></i> {{ movie.rating }}</span></td>
@@ -38,7 +68,7 @@
                             <div class="mb-3"><label class="form-label-custom">ชื่อหนัง</label><input type="text" name="title" class="form-control form-control-custom" value="{{ movie.title }}" required></div>
                             <div class="mb-3"><label class="form-label-custom">ประเภท</label><input type="text" name="genre" class="form-control form-control-custom" value="{{ movie.genre }}" required></div>
                             <div class="mb-3"><label class="form-label-custom">รายละเอียด</label><textarea name="description" class="form-control form-control-custom" rows="3">{{ movie.description }}</textarea></div>
-                            <div class="mb-3"><label class="form-label-custom">Emoji Poster</label><input type="text" name="poster_image" class="form-control form-control-custom" value="{{ movie.poster_image }}"></div>
+                            <div class="mb-3"><label class="form-label-custom">Image URL</label><input type="text" name="poster_image" class="form-control form-control-custom" value="{{ movie.poster_image }}"></div>
                             <div class="row"><div class="col-6 mb-3"><label class="form-label-custom">ความยาว (นาที)</label><input type="number" name="duration_minutes" class="form-control form-control-custom" value="{{ movie.duration_minutes }}" min="1"></div><div class="col-6 mb-3"><label class="form-label-custom">คะแนน</label><input type="number" name="rating" class="form-control form-control-custom" value="{{ movie.rating }}" min="0" max="10" step="0.1"></div></div>
                         </div>
                         <div class="modal-footer"><button type="submit" class="btn btn-primary-custom">บันทึก</button></div>
@@ -60,7 +90,7 @@
                 <div class="mb-3"><label class="form-label-custom">ชื่อหนัง</label><input type="text" name="title" class="form-control form-control-custom" required></div>
                 <div class="mb-3"><label class="form-label-custom">ประเภท</label><input type="text" name="genre" class="form-control form-control-custom" required></div>
                 <div class="mb-3"><label class="form-label-custom">รายละเอียด</label><textarea name="description" class="form-control form-control-custom" rows="3"></textarea></div>
-                <div class="mb-3"><label class="form-label-custom">Emoji Poster</label><input type="text" name="poster_image" class="form-control form-control-custom" value="🎬"></div>
+                <div class="mb-3"><label class="form-label-custom">Image URL</label><input type="text" name="poster_image" class="form-control form-control-custom" value="🎬"></div>
                 <div class="row"><div class="col-6 mb-3"><label class="form-label-custom">ความยาว (นาที)</label><input type="number" name="duration_minutes" class="form-control form-control-custom" value="120" min="1"></div><div class="col-6 mb-3"><label class="form-label-custom">คะแนน</label><input type="number" name="rating" class="form-control form-control-custom" value="7.0" min="0" max="10" step="0.1"></div></div>
             </div>
             <div class="modal-footer"><button type="submit" class="btn btn-primary-custom">เพิ่มหนัง</button></div>

@@ -54,6 +54,11 @@ def create_tables(conn):
             user_id INTEGER NOT NULL,
             book_id INTEGER NOT NULL,
             status TEXT NOT NULL DEFAULT 'pending',
+            borrow_days INTEGER DEFAULT 7,
+            due_date DATETIME,
+            return_requested INTEGER DEFAULT 0,
+            returned_at DATETIME,
+            approved_return INTEGER DEFAULT 0,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id),
@@ -158,6 +163,35 @@ def create_tables(conn):
             FOREIGN KEY (movie_id) REFERENCES movies(id)
         )
     ''')
+
+    # ── Reviews ─────────────────────────────────────────────
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS reviews (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            item_type TEXT NOT NULL,
+            item_id INTEGER NOT NULL,
+            rating INTEGER NOT NULL CHECK(rating BETWEEN 1 AND 10),
+            comment TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    ''')
+
+    # ── Add missing columns to existing tables (for migration) ──
+    cursor.execute("PRAGMA table_info(borrow_requests)")
+    columns = [col[1] for col in cursor.fetchall()]
+    
+    if 'borrow_days' not in columns:
+        cursor.execute('ALTER TABLE borrow_requests ADD COLUMN borrow_days INTEGER DEFAULT 7')
+    if 'due_date' not in columns:
+        cursor.execute('ALTER TABLE borrow_requests ADD COLUMN due_date DATETIME')
+    if 'return_requested' not in columns:
+        cursor.execute('ALTER TABLE borrow_requests ADD COLUMN return_requested INTEGER DEFAULT 0')
+    if 'returned_at' not in columns:
+        cursor.execute('ALTER TABLE borrow_requests ADD COLUMN returned_at DATETIME')
+    if 'approved_return' not in columns:
+        cursor.execute('ALTER TABLE borrow_requests ADD COLUMN approved_return INTEGER DEFAULT 0')
 
     conn.commit()
     print("✅ All tables created successfully.")

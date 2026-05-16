@@ -1,58 +1,42 @@
 {% extends "base.html" %}
-{% block title %}{{ book.title }} — Smart Library{% endblock %}
+{% block title %}{{ game.name }} — Smart Library{% endblock %}
 {% block content %}
+<div class="page-header">
+    <h1><i class="bi bi-controller me-2"></i>{{ game.name }}</h1>
+    <p>{{ game.description or 'รายละเอียดเกม' }}</p>
+</div>
+
 <div class="row py-4">
     <div class="col-md-4 mb-4">
-        {% if book.cover_image and book.cover_image.startswith('http') %}
-        <img src="{{ book.cover_image }}" class="w-100 rounded-3" alt="{{ book.title }}" style="max-height:500px;object-fit:cover;">
+        {% if game.image and game.image.startswith('http') %}
+        <img src="{{ game.image }}" class="w-100 rounded-3" alt="{{ game.name }}" style="max-height:500px;object-fit:cover;">
         {% else %}
-        <div class="card-emoji rounded-3" style="height:400px;font-size:8rem;">📘</div>
+        <div class="card-emoji rounded-3" style="height:400px;font-size:8rem;">{{ game.image or '🎮' }}</div>
         {% endif %}
     </div>
     <div class="col-md-8">
         <div class="glass-card h-100">
             <nav aria-label="breadcrumb" class="mb-3">
                 <ol class="breadcrumb mb-0" style="font-size:0.85rem;">
-                    <li class="breadcrumb-item"><a href="{{ url_for('books.list_books') }}" class="text-gradient" style="text-decoration:none;">หนังสือ</a></li>
-                    <li class="breadcrumb-item text-secondary active">{{ book.title }}</li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('games.list_games') }}" class="text-gradient" style="text-decoration:none;">เกม</a></li>
+                    <li class="breadcrumb-item text-secondary active">{{ game.name }}</li>
                 </ol>
             </nav>
-            <h1 class="mb-2" style="font-weight:800;font-size:1.8rem;">{{ book.title }}</h1>
-            <p class="text-secondary mb-3"><i class="bi bi-person me-1"></i>{{ book.author }}</p>
+            <h1 class="mb-2" style="font-weight:800;font-size:1.8rem;">{{ game.name }}</h1>
+            <p class="text-secondary mb-3"><i class="bi bi-tags me-1"></i>{{ game.category }}</p>
             <div class="d-flex gap-2 mb-3 flex-wrap">
-                <span class="filter-pill active" style="cursor:default;">{{ book.category }}</span>
-                <span class="copies-badge {% if book.copies > 0 %}copies-available{% else %}copies-unavailable{% endif %}">
-                    <i class="bi bi-layers me-1"></i> {{ book.copies }} เล่มที่ยืมได้
-                </span>
+                <span class="filter-pill active" style="cursor:default;">{{ game.min_players }}-{{ game.max_players }} คน</span>
+                <span class="copies-badge copies-available"><i class="bi bi-people me-1"></i>ผู้เล่น</span>
             </div>
-            <p class="mb-4" style="color:var(--text-secondary);line-height:1.8;">{{ book.description or 'ไม่มีรายละเอียด' }}</p>
-
-            {% if current_user.is_authenticated %}
-                {% if book.copies > 0 %}
-                    {% if has_pending %}
-                    <button class="btn btn-outline-custom" disabled><i class="bi bi-hourglass me-2"></i>รอการอนุมัติ</button>
-                    {% else %}
-                    <form method="POST" action="{{ url_for('books.borrow', book_id=book.id) }}">
-                        <div class="mb-3">
-                            <label class="form-label-custom" for="borrowDays">ระยะเวลายืม</label>
-                            <select id="borrowDays" name="borrow_days" class="form-select form-select-custom">
-                                <option value="7">7 วัน</option>
-                                <option value="14">14 วัน</option>
-                                <option value="21">21 วัน</option>
-                                <option value="30">30 วัน</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary-custom" onclick="return confirm('ยืนยันการยืมหนังสือเล่มนี้?')">
-                            <i class="bi bi-book me-2"></i>ยืมหนังสือ
-                        </button>
-                    </form>
-                    {% endif %}
-                {% else %}
-                <button class="btn btn-danger-custom" disabled><i class="bi bi-x-circle me-2"></i>หนังสือหมด</button>
-                {% endif %}
-            {% else %}
-            <a href="{{ url_for('auth.login') }}" class="btn btn-primary-custom"><i class="bi bi-box-arrow-in-right me-2"></i>เข้าสู่ระบบเพื่อยืม</a>
-            {% endif %}
+            <p class="mb-4" style="color:var(--text-secondary);line-height:1.8;">{{ game.description or 'ไม่มีรายละเอียดเพิ่มเติม' }}</p>
+            <div class="d-flex gap-3 flex-wrap">
+                <a href="{{ url_for('games.book_table', game_id=game.id) }}" class="btn btn-primary-custom">
+                    <i class="bi bi-calendar-plus me-2"></i>จองโต๊ะ
+                </a>
+                <a href="{{ url_for('games.list_games') }}" class="btn btn-outline-custom">
+                    <i class="bi bi-arrow-left-circle me-2"></i>กลับสู่หน้ารายการ
+                </a>
+            </div>
         </div>
     </div>
 </div>
@@ -92,11 +76,7 @@
                     <p class="mb-0">{{ review.comment or 'ไม่มีคอมเมนต์' }}</p>
                 </div>
                 {% else %}
-                <div class="empty-state">
-                    <i class="bi bi-chat-left-text"></i>
-                    <h5>ยังไม่มีรีวิว</h5>
-                    <p>หนังสือเล่มนี้ยังไม่มีคะแนนหรือความคิดเห็น ใส่รีวิวแรกเพื่อช่วยผู้ใช้อื่นได้เลย</p>
-                </div>
+                <div class="text-secondary">ยังไม่มีรีวิวสำหรับเกมนี้</div>
                 {% endfor %}
             </div>
         </div>
@@ -105,7 +85,7 @@
         <div class="glass-card">
             <h5 class="mb-3" style="font-weight:700;">เขียนรีวิว</h5>
             {% if current_user.is_authenticated %}
-            <form method="POST" action="{{ url_for('books.add_review', book_id=book.id) }}">
+            <form method="POST" action="{{ url_for('games.add_review', game_id=game.id) }}">
                 <div class="mb-3">
                     <label class="form-label-custom">ให้คะแนน</label>
                     <select name="rating" class="form-select form-select-custom">

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}จัดการรีวิว — Smart Library{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="bi bi-chat-left-text me-2"></i>จัดการรีวิว</h1>
+    <p>ดูรีวิวทั้งหมดของหนังสือ เกม และภาพยนตร์</p>
+</div>
+
+<div class="glass-card">
+    <div class="table-responsive">
+        <table class="table table-custom mb-0">
+            <thead>
+                <tr>
+                    <th>ประเภท</th>
+                    <th>รายการ</th>
+                    <th>ผู้รีวิว</th>
+                    <th>คะแนน</th>
+                    <th>ความคิดเห็น</th>
+                    <th>วันที่</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for review in reviews %}
+                <tr>
+                    <td>{{ review.item_type|capitalize }}</td>
+                    <td>{{ review.item_title or 'ไม่พบรายการ' }}</td>
+                    <td>{{ review.username }}</td>
+                    <td><span class="rating"><i class="bi bi-star-fill"></i> {{ review.rating }}</span></td>
+                    <td>{{ review.comment or '-' }}</td>
+                    <td>{{ review.created_at[:16] }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('admin.delete_review', review_id=review.id) }}">
+                            <button type="submit" class="btn btn-danger-custom btn-sm-custom" onclick="return confirm('ลบรีวิวนี้หรือไม่?')">
+                                ลบ
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-secondary py-4">ยังไม่มีรีวิวในระบบ</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

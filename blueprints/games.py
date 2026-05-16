@@ -49,6 +49,70 @@ def list_games():
                            categories=categories, search=search, selected_category=category)
 
 
+@games_bp.route('/<int:game_id>')
+def detail(game_id):
+    db = get_db()
+    game = db.execute('SELECT * FROM games WHERE id = ?', (game_id,)).fetchone()
+    if not game:
+        flash('ไม่พบเกมที่ต้องการ', 'danger')
+        return redirect(url_for('games.list_games'))
+
+    review_summary = db.execute(
+        'SELECT COUNT(*) as count, COALESCE(ROUND(AVG(rating), 1), 0) as avg_rating FROM reviews WHERE item_type = ? AND item_id = ?',
+        ('game', game_id)
+    ).fetchone()
+    reviews = db.execute(
+        'SELECT r.*, u.username FROM reviews r JOIN users u ON u.id = r.user_id WHERE r.item_type = ? AND r.item_id = ? ORDER BY r.created_at DESC',
+        ('game', game_id)
+    ).fetchall()
+    existing_review = None
+    if 'user_id' in session:
+        existing_review = db.execute(
+            'SELECT * FROM reviews WHERE user_id = ? AND item_type = ? AND item_id = ?',
+            (session['user_id'], 'game', game_id)
+        ).fetchone()
+
+    return render_template('games/detail.html', game=game, reviews=reviews,
+                           review_summary=review_summary, existing_review=existing_review)
+
+
+@games_bp.route('/<int:game_id>/review', methods=['POST'])
+def add_review(game_id):
+    if 'user_id' not in session:
+        flash('กรุณาเข้าสู่ระบบก่อน', 'warning')
+        return redirect(url_for('auth.login'))
+
+    db = get_db()
+    game = db.execute('SELECT * FROM games WHERE id = ?', (game_id,)).fetchone()
+    if not game:
+        flash('ไม่พบเกมที่ต้องการ', 'danger')
+        return redirect(url_for('games.list_games'))
+
+    rating = request.form.get('rating', type=int, default=5)
+    rating = max(1, min(10, rating))
+    comment = request.form.get('comment', '').strip()
+
+    existing = db.execute(
+        'SELECT id FROM reviews WHERE user_id = ? AND item_type = ? AND item_id = ?',
+        (session['user_id'], 'game', game_id)
+    ).fetchone()
+
+    if existing:
+        db.execute(
+            'UPDATE reviews SET rating = ?, comment = ?, created_at = CURRENT_TIMESTAMP WHERE id = ?',
+            (rating, comment, existing['id'])
+        )
+    else:
+        db.execute(
+            'INSERT INTO reviews (user_id, item_type, item_id, rating, comment) VALUES (?, ?, ?, ?, ?)',
+            (session['user_id'], 'game', game_id, rating, comment)
+        )
+
+    db.commit()
+    flash('บันทึกรีวิวเรียบร้อย', 'success')
+    return redirect(url_for('games.detail', game_id=game_id))
+
+
 @games_bp.route('/book', methods=['GET', 'POST'])
 def book_table():
     """Book a table for a game session."""
@@ -77,24 +141,17 @@ def book_table():
 
         end_time = start_time + timedelta(minutes=duration)
 
-        # Check for booking conflicts on the same table
-        # Overlap condition: NOT (end <= existing_start OR start >= existing_end)
-        conflict = db.execute('''
-            SELECT id FROM game_bookings
-            WHERE table_id = ?
-              AND status != 'cancelled'
-              AND NOT (? <= start_time OR ? >= end_time)
-        ''', (table_id, end_time.strftime('%Y-%m-%d %H:%M:%S'),
-              start_time.strftime('%Y-%m-%d %H:%M:%S'))).fetchone()
-
-        if conflict:
-            flash('ช่วงเวลานี้มีการจองโต๊ะนี้อยู่แล้ว กรุณาเลือกเวลาอื่น', 'danger')
+        # Validate time range
+        if end_time <= start_time:
+            flash('เวลาสิ้นสุดต้องมากกว่าเวลาเริ่มต้น', 'danger')
             return redirect(url_for('games.book_table'))
 
         # Prevent booking in the past
         if start_time < datetime.now():
             flash('ไม่สามารถจองเวลาในอดีตได้', 'danger')
             return redirect(url_for('games.book_table'))
+
+        # Check for booking conflicts on the same table
 
         # Create booking
         db.execute('''

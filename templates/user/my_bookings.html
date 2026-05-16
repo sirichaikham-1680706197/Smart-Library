@@ -20,14 +20,50 @@
         {% if borrows %}
         <div class="table-responsive">
             <table class="table table-custom">
-                <thead><tr><th>หนังสือ</th><th>ผู้แต่ง</th><th>สถานะ</th><th>วันที่ขอ</th></tr></thead>
+                <thead><tr><th>หนังสือ</th><th>ผู้แต่ง</th><th>วันครบกำหนด</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
                 <tbody>
                 {% for b in borrows %}
                 <tr>
                     <td><strong>{{ b.title }}</strong></td>
                     <td>{{ b.author }}</td>
-                    <td><span class="badge-status badge-{{ b.status }}">{{ b.status }}</span></td>
-                    <td>{{ b.created_at[:16] }}</td>
+                    <td>
+                        {% if b.due_date %}
+                            {% set due_date = b.due_date %}
+                            {% if due_date < now_str %}
+                            <span class="badge bg-danger">{{ b.due_date[:16] }}</span>
+                            {% else %}
+                            <span class="text-secondary">{{ b.due_date[:16] }}</span>
+                            {% endif %}
+                        {% else %}
+                        <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if b.status == 'pending' %}
+                        <span class="badge-status badge-pending">รอการอนุมัติ</span>
+                        {% elif b.status == 'approved' %}
+                        <span class="badge-status badge-confirmed">ยืมอยู่</span>
+                        {% elif b.status == 'return_pending' %}
+                        <span class="badge-status badge-warning">รอการคืน</span>
+                        {% elif b.status == 'returned' %}
+                        <span class="badge-status badge-success">คืนแล้ว</span>
+                        {% elif b.status == 'rejected' %}
+                        <span class="badge-status badge-cancelled">ไม่อนุมัติ</span>
+                        {% else %}
+                        <span class="badge-status">{{ b.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if b.status == 'approved' and not b.return_requested %}
+                        <form method="POST" action="{{ url_for('books.request_return', borrow_id=b.id) }}" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-outline-custom" onclick="return confirm('ขอคืนหนังสือเล่มนี้?')">
+                                <i class="bi bi-box2-heart"></i> ขอคืน
+                            </button>
+                        </form>
+                        {% else %}
+                        <span class="text-muted text-sm">-</span>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
                 </tbody>

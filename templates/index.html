@@ -75,8 +75,17 @@
         {% for movie in featured_movies %}
         <div class="col-lg-3 col-md-6">
             <div class="item-card">
-                <div class="card-emoji">{{ movie.poster_image }}</div>
-                <div class="card-body">
+
+    {% if movie.poster_image and movie.poster_image.startswith('http') %}
+    <img src="{{ movie.poster_image }}"
+         class="card-img-top"
+         alt="{{ movie.title }}"
+         style="height:220px; object-fit:cover;">
+    {% else %}
+    <div class="card-emoji">{{ movie.poster_image }}</div>
+    {% endif %}
+
+    <div class="card-body">
                     <h5 class="card-title">{{ movie.title }}</h5>
                     <p class="card-text">{{ movie.description[:80] }}...</p>
                     <div class="d-flex justify-content-between align-items-center mt-2">

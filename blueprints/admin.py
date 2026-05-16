@@ -2,6 +2,7 @@
 Admin Blueprint — Dashboard, CRUD for books/games/movies, borrow request management.
 """
 import sqlite3
+from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, g
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
@@ -37,9 +38,12 @@ def dashboard():
         'books': db.execute('SELECT COUNT(*) as c FROM books').fetchone()['c'],
         'games': db.execute('SELECT COUNT(*) as c FROM games').fetchone()['c'],
         'movies': db.execute('SELECT COUNT(*) as c FROM movies').fetchone()['c'],
-        'pending_borrows': db.execute("SELECT COUNT(*) as c FROM borrow_requests WHERE status='pending'").fetchone()['c'],
+        'reviews': db.execute('SELECT COUNT(*) as c FROM reviews').fetchone()['c'],
+        'overdue': db.execute("SELECT COUNT(*) as c FROM borrow_requests WHERE status='approved' AND due_date < datetime('now')").fetchone()['c'],
         'game_bookings': db.execute("SELECT COUNT(*) as c FROM game_bookings WHERE status='confirmed'").fetchone()['c'],
         'movie_bookings': db.execute("SELECT COUNT(*) as c FROM movie_bookings WHERE status='confirmed'").fetchone()['c'],
+        'pending_borrows': db.execute("SELECT COUNT(*) as c FROM borrow_requests WHERE status='pending'").fetchone()['c'],
+        'return_requests': db.execute("SELECT COUNT(*) as c FROM borrow_requests WHERE return_requested=1 AND status='return_pending'").fetchone()['c'],
     }
     recent_borrows = db.execute('''
         SELECT br.*, u.username, b.title FROM borrow_requests br
@@ -109,13 +113,64 @@ def reject_borrow(req_id):
     return redirect(url_for('admin.borrow_requests'))
 
 
+# ── Return Requests ────────────────────────────────────────
+@admin_bp.route('/returns')
+@admin_required
+def return_requests():
+    """View return requests from users."""
+    db = get_db()
+    status_filter = request.args.get('status', 'return_pending')
+    query = '''SELECT br.*, u.username, b.title FROM borrow_requests br
+               JOIN users u ON u.id=br.user_id JOIN books b ON b.id=br.book_id
+               WHERE br.return_requested = 1'''
+    params = []
+    if status_filter:
+        query += ' AND br.status=?'
+        params.append(status_filter)
+    query += ' ORDER BY br.created_at DESC'
+    requests_list = db.execute(query, params).fetchall()
+    return render_template('admin/return_requests.html', requests=requests_list, status_filter=status_filter)
+
+
+@admin_bp.route('/borrows/<int:req_id>/approve-return', methods=['POST'])
+@admin_required
+def approve_return(req_id):
+    """Approve book return request."""
+    db = get_db()
+    req = db.execute('SELECT * FROM borrow_requests WHERE id=?', (req_id,)).fetchone()
+    if not req:
+        flash('ไม่พบคำขอ', 'danger')
+        return redirect(url_for('admin.return_requests'))
+    
+    # Update borrow request status
+    returned_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    db.execute(
+        "UPDATE borrow_requests SET status='returned', approved_return=1, returned_at=?, updated_at=CURRENT_TIMESTAMP WHERE id=?",
+        (returned_at, req_id)
+    )
+    
+    # Return copies to book
+    db.execute("UPDATE books SET copies=copies+1 WHERE id=?", (req['book_id'],))
+    db.commit()
+    
+    flash('อนุมัติการคืนหนังสือเรียบร้อย', 'success')
+    return redirect(url_for('admin.return_requests'))
+
+
 # ── Manage Books ───────────────────────────────────────────
 @admin_bp.route('/books')
 @admin_required
 def manage_books():
     db = get_db()
-    books = db.execute('SELECT * FROM books ORDER BY created_at DESC').fetchall()
-    return render_template('admin/manage_books.html', books=books)
+    search = request.args.get('search', '').strip()
+    query = 'SELECT * FROM books WHERE 1=1'
+    params = []
+    if search:
+        query += ' AND (title LIKE ? OR author LIKE ? OR category LIKE ?)'
+        params.extend([f'%{search}%', f'%{search}%', f'%{search}%'])
+    query += ' ORDER BY created_at DESC'
+    books = db.execute(query, params).fetchall()
+    return render_template('admin/manage_books.html', books=books, search=search)
 
 
 @admin_bp.route('/books/add', methods=['POST'])
@@ -158,8 +213,15 @@ def delete_book(bid):
 @admin_required
 def manage_games():
     db = get_db()
-    games = db.execute('SELECT * FROM games ORDER BY created_at DESC').fetchall()
-    return render_template('admin/manage_games.html', games=games)
+    search = request.args.get('search', '').strip()
+    query = 'SELECT * FROM games WHERE 1=1'
+    params = []
+    if search:
+        query += ' AND (name LIKE ? OR category LIKE ?)'
+        params.extend([f'%{search}%', f'%{search}%'])
+    query += ' ORDER BY created_at DESC'
+    games = db.execute(query, params).fetchall()
+    return render_template('admin/manage_games.html', games=games, search=search)
 
 
 @admin_bp.route('/games/add', methods=['POST'])
@@ -202,8 +264,46 @@ def delete_game(gid):
 @admin_required
 def manage_movies():
     db = get_db()
-    movies = db.execute('SELECT * FROM movies ORDER BY created_at DESC').fetchall()
-    return render_template('admin/manage_movies.html', movies=movies)
+    search = request.args.get('search', '').strip()
+    query = 'SELECT * FROM movies WHERE 1=1'
+    params = []
+    if search:
+        query += ' AND (title LIKE ? OR genre LIKE ?)'
+        params.extend([f'%{search}%', f'%{search}%'])
+    query += ' ORDER BY created_at DESC'
+    movies = db.execute(query, params).fetchall()
+    return render_template('admin/manage_movies.html', movies=movies, search=search)
+
+
+@admin_bp.route('/reviews')
+@admin_required
+def manage_reviews():
+    db = get_db()
+    reviews = db.execute('''
+        SELECT r.*, u.username,
+               CASE r.item_type
+                    WHEN 'book' THEN b.title
+                    WHEN 'game' THEN g.name
+                    WHEN 'movie' THEN m.title
+               END AS item_title
+        FROM reviews r
+        JOIN users u ON u.id = r.user_id
+        LEFT JOIN books b ON r.item_type = 'book' AND r.item_id = b.id
+        LEFT JOIN games g ON r.item_type = 'game' AND r.item_id = g.id
+        LEFT JOIN movies m ON r.item_type = 'movie' AND r.item_id = m.id
+        ORDER BY r.created_at DESC
+    ''').fetchall()
+    return render_template('admin/reviews.html', reviews=reviews)
+
+
+@admin_bp.route('/reviews/<int:review_id>/delete', methods=['POST'])
+@admin_required
+def delete_review(review_id):
+    db = get_db()
+    db.execute('DELETE FROM reviews WHERE id = ?', (review_id,))
+    db.commit()
+    flash('ลบรีวิวเรียบร้อย', 'success')
+    return redirect(url_for('admin.manage_reviews'))
 
 
 @admin_bp.route('/movies/add', methods=['POST'])

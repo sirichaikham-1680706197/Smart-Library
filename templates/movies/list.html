@@ -37,7 +37,14 @@
         {% for movie in recommendations %}
         <div class="col-xl-3 col-lg-4 col-md-6">
             <div class="item-card" style="border-color:rgba(108,99,255,0.3);">
+                {% if movie.poster_image and movie.poster_image.startswith('http') %}
+                <img src="{{ movie.poster_image }}"
+                    class="card-img-top"
+                    alt="{{ movie.title }}"
+                    style="height:220px; object-fit:cover;">
+                {% else %}
                 <div class="card-emoji">{{ movie.poster_image }}</div>
+                {% endif %}
                 <div class="card-body">
                     <h5 class="card-title">{{ movie.title }}</h5>
                     <p class="card-text">{{ movie.description[:60] }}...</p>
@@ -64,7 +71,14 @@
     {% for movie in movies %}
     <div class="col-xl-3 col-lg-4 col-md-6">
         <div class="item-card">
+            {% if movie.poster_image and movie.poster_image.startswith('http') %}
+            <img src="{{ movie.poster_image }}"
+                class="card-img-top"
+                alt="{{ movie.title }}"
+                style="height:220px; object-fit:cover;">
+            {% else %}
             <div class="card-emoji">{{ movie.poster_image }}</div>
+            {% endif %}
             <div class="card-body">
                 <h5 class="card-title">{{ movie.title }}</h5>
                 <p class="card-text">{{ movie.description[:80] }}...</p>
@@ -75,6 +89,9 @@
                 <span class="filter-pill mt-2" style="cursor:default;font-size:0.7rem;">{{ movie.genre }}</span>
             </div>
             <div class="card-footer d-flex gap-2">
+                <a href="{{ url_for('movies.detail', movie_id=movie.id) }}" class="btn btn-outline-custom btn-sm-custom flex-fill">
+                    <i class="bi bi-info-circle me-1"></i>รายละเอียด
+                </a>
                 <a href="{{ url_for('movies.book_room', movie_id=movie.id) }}" class="btn btn-secondary-custom btn-sm-custom flex-fill">
                     <i class="bi bi-ticket-perforated me-1"></i>จองดู
                 </a>

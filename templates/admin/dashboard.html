@@ -2,48 +2,68 @@
 {% block title %}Admin Dashboard — Smart Library{% endblock %}
 {% block content %}
 <div class="page-header">
-    <h1><i class="bi bi-shield-lock me-2"></i>Admin Dashboard</h1>
+    <h1 class="text-gradient"><i class="bi bi-shield-lock me-2"></i>Admin Dashboard</h1>
     <p>ภาพรวมระบบทั้งหมด</p>
 </div>
 
 <!-- Stats Cards -->
 <div class="row g-4 mb-5">
-    <div class="col-lg-3 col-md-6">
+    <div class="col-lg-4 col-md-6">
         <div class="stat-card">
             <div class="stat-icon primary"><i class="bi bi-people"></i></div>
             <div class="stat-value">{{ stats.users }}</div>
             <div class="stat-label">ผู้ใช้ทั้งหมด</div>
         </div>
     </div>
-    <div class="col-lg-3 col-md-6">
+    <div class="col-lg-4 col-md-6">
         <div class="stat-card">
             <div class="stat-icon secondary"><i class="bi bi-book"></i></div>
             <div class="stat-value">{{ stats.books }}</div>
             <div class="stat-label">หนังสือ</div>
         </div>
     </div>
-    <div class="col-lg-3 col-md-6">
+    <div class="col-lg-4 col-md-6">
         <div class="stat-card">
-            <div class="stat-icon warning"><i class="bi bi-hourglass-split"></i></div>
-            <div class="stat-value">{{ stats.pending_borrows }}</div>
-            <div class="stat-label">รอการอนุมัติ</div>
+            <div class="stat-icon info"><i class="bi bi-controller"></i></div>
+            <div class="stat-value">{{ stats.games }}</div>
+            <div class="stat-label">เกม</div>
         </div>
     </div>
-    <div class="col-lg-3 col-md-6">
+    <div class="col-lg-4 col-md-6">
         <div class="stat-card">
-            <div class="stat-icon danger"><i class="bi bi-calendar-check"></i></div>
-            <div class="stat-value">{{ stats.game_bookings + stats.movie_bookings }}</div>
-            <div class="stat-label">การจองทั้งหมด</div>
+            <div class="stat-icon warning"><i class="bi bi-film"></i></div>
+            <div class="stat-value">{{ stats.movies }}</div>
+            <div class="stat-label">ภาพยนตร์</div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon success"><i class="bi bi-star-fill"></i></div>
+            <div class="stat-value">{{ stats.reviews }}</div>
+            <div class="stat-label">รีวิวทั้งหมด</div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon danger-dark"><i class="bi bi-exclamation-octagon"></i></div>
+            <div class="stat-value">{{ stats.overdue }}</div>
+            <div class="stat-label">รายการเกินกำหนด</div>
         </div>
     </div>
 </div>
 
 <!-- Quick Links -->
+<div class="row g-4 mb-3">
+    <div class="col-md-4"><a href="{{ url_for('admin.manage_books') }}" class="btn btn-primary-custom w-100 py-3"><i class="bi bi-book me-2"></i>จัดการหนังสือ</a></div>
+    <div class="col-md-4"><a href="{{ url_for('admin.borrow_requests') }}" class="btn btn-secondary-custom w-100 py-3"><i class="bi bi-inbox me-2"></i>คำขอยืม</a></div>
+    <div class="col-md-4"><a href="{{ url_for('admin.return_requests') }}" class="btn btn-danger-custom w-100 py-3"><i class="bi bi-box2-heart me-2"></i>คำขอคืน</a></div>
+</div>
 <div class="row g-4 mb-5">
-    <div class="col-md-3"><a href="{{ url_for('admin.manage_books') }}" class="btn btn-primary-custom w-100 py-3"><i class="bi bi-book me-2"></i>จัดการหนังสือ</a></div>
-    <div class="col-md-3"><a href="{{ url_for('admin.manage_games') }}" class="btn btn-secondary-custom w-100 py-3"><i class="bi bi-controller me-2"></i>จัดการเกม</a></div>
-    <div class="col-md-3"><a href="{{ url_for('admin.manage_movies') }}" class="btn btn-danger-custom w-100 py-3"><i class="bi bi-film me-2"></i>จัดการหนัง</a></div>
-    <div class="col-md-3"><a href="{{ url_for('admin.borrow_requests') }}" class="btn btn-outline-custom w-100 py-3"><i class="bi bi-inbox me-2"></i>คำขอยืม</a></div>
+    <div class="col-md-6"><a href="{{ url_for('admin.manage_games') }}" class="btn btn-outline-custom w-100 py-3"><i class="bi bi-controller me-2"></i>จัดการเกม</a></div>
+    <div class="col-md-6"><a href="{{ url_for('admin.manage_movies') }}" class="btn btn-outline-custom w-100 py-3"><i class="bi bi-film me-2"></i>จัดการภาพยนตร์</a></div>
+</div>
+<div class="row g-4 mb-5">
+    <div class="col-md-4"><a href="{{ url_for('admin.manage_reviews') }}" class="btn btn-secondary-custom w-100 py-3"><i class="bi bi-chat-left-text me-2"></i>จัดการรีวิว</a></div>
 </div>
 
 <!-- Recent Activity -->

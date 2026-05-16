@@ -40,6 +40,70 @@ def list_movies():
                            search=search, selected_genre=genre, recommendations=recommendations)
 
 
+@movies_bp.route('/<int:movie_id>')
+def detail(movie_id):
+    db = get_db()
+    movie = db.execute('SELECT * FROM movies WHERE id = ?', (movie_id,)).fetchone()
+    if not movie:
+        flash('ไม่พบภาพยนตร์ที่ต้องการ', 'danger')
+        return redirect(url_for('movies.list_movies'))
+
+    review_summary = db.execute(
+        'SELECT COUNT(*) as count, COALESCE(ROUND(AVG(rating), 1), 0) as avg_rating FROM reviews WHERE item_type = ? AND item_id = ?',
+        ('movie', movie_id)
+    ).fetchone()
+    reviews = db.execute(
+        'SELECT r.*, u.username FROM reviews r JOIN users u ON u.id = r.user_id WHERE r.item_type = ? AND r.item_id = ? ORDER BY r.created_at DESC',
+        ('movie', movie_id)
+    ).fetchall()
+    existing_review = None
+    if 'user_id' in session:
+        existing_review = db.execute(
+            'SELECT * FROM reviews WHERE user_id = ? AND item_type = ? AND item_id = ?',
+            (session['user_id'], 'movie', movie_id)
+        ).fetchone()
+
+    return render_template('movies/detail.html', movie=movie, reviews=reviews,
+                           review_summary=review_summary, existing_review=existing_review)
+
+
+@movies_bp.route('/<int:movie_id>/review', methods=['POST'])
+def add_review(movie_id):
+    if 'user_id' not in session:
+        flash('กรุณาเข้าสู่ระบบก่อน', 'warning')
+        return redirect(url_for('auth.login'))
+
+    db = get_db()
+    movie = db.execute('SELECT * FROM movies WHERE id = ?', (movie_id,)).fetchone()
+    if not movie:
+        flash('ไม่พบภาพยนตร์ที่ต้องการ', 'danger')
+        return redirect(url_for('movies.list_movies'))
+
+    rating = request.form.get('rating', type=int, default=5)
+    rating = max(1, min(10, rating))
+    comment = request.form.get('comment', '').strip()
+
+    existing = db.execute(
+        'SELECT id FROM reviews WHERE user_id = ? AND item_type = ? AND item_id = ?',
+        (session['user_id'], 'movie', movie_id)
+    ).fetchone()
+
+    if existing:
+        db.execute(
+            'UPDATE reviews SET rating = ?, comment = ?, created_at = CURRENT_TIMESTAMP WHERE id = ?',
+            (rating, comment, existing['id'])
+        )
+    else:
+        db.execute(
+            'INSERT INTO reviews (user_id, item_type, item_id, rating, comment) VALUES (?, ?, ?, ?, ?)',
+            (session['user_id'], 'movie', movie_id, rating, comment)
+        )
+
+    db.commit()
+    flash('บันทึกรีวิวเรียบร้อย', 'success')
+    return redirect(url_for('movies.detail', movie_id=movie_id))
+
+
 @movies_bp.route('/book', methods=['GET', 'POST'])
 def book_room():
     if 'user_id' not in session:
@@ -63,17 +127,27 @@ def book_room():
             flash('ไม่พบภาพยนตร์', 'danger')
             return redirect(url_for('movies.book_room'))
         end_time = start_time + timedelta(minutes=movie['duration_minutes'] + 15)
+
+        # Validate time range
+        if end_time <= start_time:
+            flash('เวลาสิ้นสุดต้องมากกว่าเวลาเริ่มต้น', 'danger')
+            return redirect(url_for('movies.book_room'))
+
         if start_time < datetime.now():
             flash('ไม่สามารถจองเวลาในอดีตได้', 'danger')
             return redirect(url_for('movies.book_room'))
+        # Check for booking conflicts in the same room
+        # Overlap condition: NOT (end <= existing_start OR start >= existing_end)
+        # This covers all overlap cases: partial overlap, start collision, end collision, complete overlap
         conflict = db.execute('''
             SELECT id FROM movie_bookings
-            WHERE room_id = ? AND status != 'cancelled'
+            WHERE room_id = ? AND status IN ('pending', 'confirmed')
               AND NOT (? <= start_time OR ? >= end_time)
         ''', (room_id, end_time.strftime('%Y-%m-%d %H:%M:%S'),
               start_time.strftime('%Y-%m-%d %H:%M:%S'))).fetchone()
+
         if conflict:
-            flash('ช่วงเวลานี้ห้องนี้ถูกจองแล้ว', 'danger')
+            flash('ช่วงเวลานี้ห้องนี้ถูกจองแล้ว กรุณาเลือกเวลาใหม่', 'danger')
             return redirect(url_for('movies.book_room'))
         db.execute('''
             INSERT INTO movie_bookings (user_id,movie_id,room_id,start_time,end_time,status)

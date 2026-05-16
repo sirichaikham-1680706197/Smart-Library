@@ -103,6 +103,9 @@ def create_app():
                                game_bookings=game_bks, movie_bookings=movie_bks,
                                watch_history=watch_hist)
 
+    # Add endpoint alias for my_bookings
+    app.add_url_rule('/my-bookings', endpoint='my_bookings')
+
     # ── Error handlers ─────────────────────────────────────
     @app.errorhandler(404)
     def not_found(e):

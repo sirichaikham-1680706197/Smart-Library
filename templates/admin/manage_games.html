@@ -11,6 +11,20 @@
     </button>
 </div>
 
+<form method="GET" action="{{ url_for('admin.manage_games') }}" class="mb-4">
+    <div class="row g-3 align-items-end">
+        <div class="col-md-8">
+            <div class="search-bar" style="max-width:100%;margin:0;">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" name="search" class="form-control" placeholder="ค้นหาเกม..." value="{{ search }}">
+            </div>
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary-custom w-100"><i class="bi bi-search me-1"></i>ค้นหา</button>
+        </div>
+    </div>
+</form>
+
 <div class="glass-card">
     <div class="table-responsive">
         <table class="table table-custom mb-0">
@@ -19,7 +33,23 @@
             {% for game in games %}
             <tr>
                 <td>{{ game.id }}</td>
-                <td><strong>{{ game.image }} {{ game.name }}</strong></td>
+                <td>
+    <div class="d-flex align-items-center gap-2">
+
+        {% if game.image and game.image.startswith('http') %}
+            <img src="{{ game.image }}"
+                 alt="{{ game.name }}"
+                 style="width:50px; height:50px; object-fit:cover; border-radius:8px;">
+        {% else %}
+            <div class="card-emoji" style="font-size:2rem;">
+                {{ game.image }}
+            </div>
+        {% endif %}
+
+        <strong>{{ game.name }}</strong>
+
+    </div>
+</td>
                 <td><span class="filter-pill" style="cursor:default;font-size:0.7rem;">{{ game.category }}</span></td>
                 <td>{{ game.min_players }}-{{ game.max_players }}</td>
                 <td>
@@ -37,7 +67,7 @@
                             <div class="mb-3"><label class="form-label-custom">ชื่อเกม</label><input type="text" name="name" class="form-control form-control-custom" value="{{ game.name }}" required></div>
                             <div class="mb-3"><label class="form-label-custom">ประเภท</label><input type="text" name="category" class="form-control form-control-custom" value="{{ game.category }}" required></div>
                             <div class="mb-3"><label class="form-label-custom">รายละเอียด</label><textarea name="description" class="form-control form-control-custom" rows="3">{{ game.description }}</textarea></div>
-                            <div class="mb-3"><label class="form-label-custom">Emoji Icon</label><input type="text" name="image" class="form-control form-control-custom" value="{{ game.image }}"></div>
+                            <div class="mb-3"><label class="form-label-custom">Image URL</label><input type="text" name="image" class="form-control form-control-custom" value="{{ game.image }}"></div>
                             <div class="row"><div class="col-6 mb-3"><label class="form-label-custom">ผู้เล่นขั้นต่ำ</label><input type="number" name="min_players" class="form-control form-control-custom" value="{{ game.min_players }}" min="1"></div><div class="col-6 mb-3"><label class="form-label-custom">ผู้เล่นสูงสุด</label><input type="number" name="max_players" class="form-control form-control-custom" value="{{ game.max_players }}" min="1"></div></div>
                         </div>
                         <div class="modal-footer"><button type="submit" class="btn btn-primary-custom">บันทึก</button></div>
@@ -59,7 +89,7 @@
                 <div class="mb-3"><label class="form-label-custom">ชื่อเกม</label><input type="text" name="name" class="form-control form-control-custom" required></div>
                 <div class="mb-3"><label class="form-label-custom">ประเภท</label><input type="text" name="category" class="form-control form-control-custom" required></div>
                 <div class="mb-3"><label class="form-label-custom">รายละเอียด</label><textarea name="description" class="form-control form-control-custom" rows="3"></textarea></div>
-                <div class="mb-3"><label class="form-label-custom">Emoji Icon</label><input type="text" name="image" class="form-control form-control-custom" value="🎮"></div>
+                <div class="mb-3"><label class="form-label-custom">Image URL</label><input type="text" name="image" class="form-control form-control-custom" value="🎮"></div>
                 <div class="row"><div class="col-6 mb-3"><label class="form-label-custom">ผู้เล่นขั้นต่ำ</label><input type="number" name="min_players" class="form-control form-control-custom" value="2" min="1"></div><div class="col-6 mb-3"><label class="form-label-custom">ผู้เล่นสูงสุด</label><input type="number" name="max_players" class="form-control form-control-custom" value="4" min="1"></div></div>
             </div>
             <div class="modal-footer"><button type="submit" class="btn btn-primary-custom">เพิ่มเกม</button></div>

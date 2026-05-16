@@ -65,9 +65,12 @@
         </div>
     </div>
     {% else %}
-    <div class="col-12 text-center py-5">
-        <i class="bi bi-search" style="font-size:3rem;color:var(--text-muted);"></i>
-        <p class="text-secondary mt-3">ไม่พบหนังสือที่ค้นหา</p>
+    <div class="col-12">
+        <div class="empty-state">
+            <i class="bi bi-search"></i>
+            <h4>ไม่พบหนังสือ</h4>
+            <p>ลองปรับคำค้นหรือเลือกหมวดหมู่อื่น เพื่อค้นหาหนังสือที่คุณต้องการ</p>
+        </div>
     </div>
     {% endfor %}
 </div>

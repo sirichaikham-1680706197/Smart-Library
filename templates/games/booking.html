@@ -16,7 +16,7 @@
                         <option value="">-- เลือกเกม --</option>
                         {% for game in games %}
                         <option value="{{ game.id }}" {% if selected_game_id == game.id %}selected{% endif %}>
-                            {{ game.image }} {{ game.name }} ({{ game.min_players }}-{{ game.max_players }} คน)
+                            {{ game.name }} ({{ game.min_players }}-{{ game.max_players }} คน)
                         </option>
                         {% endfor %}
                     </select>
