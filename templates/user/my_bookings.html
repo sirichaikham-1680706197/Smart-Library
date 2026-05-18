@@ -6,6 +6,9 @@
     <p>ดูประวัติการยืมหนังสือ จองเกม และจองหนัง</p>
 </div>
 
+{% set book_placeholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 80'%3E%3Crect width='60' height='80' rx='10' fill='%2314202f'/%3E%3Crect x='8' y='12' width='44' height='56' rx='8' fill='%232e3a56'/%3E%3Cpath d='M16 26h28M16 34h28M16 42h20' stroke='%238b94c9' stroke-width='2' stroke-linecap='round'/%3E%3Ctext x='50%25' y='72%25' fill='%23c7d2fe' font-size='7' text-anchor='middle' font-family='Arial,Helvetica,sans-serif'>NO COVER</text%3E%3C/svg%3E" %}
+{% set movie_placeholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 80'%3E%3Crect width='60' height='80' rx='10' fill='%2314202f'/%3E%3Crect x='8' y='12' width='44' height='56' rx='8' fill='%232e3a56'/%3E%3Cpath d='M14 24h10v8H14zM36 24h10v8H36zM16 40h28v24H16z' fill='%238b94c9'/%3E%3Ctext x='50%25' y='74%25' fill='%23c7d2fe' font-size='7' text-anchor='middle' font-family='Arial,Helvetica,sans-serif'>NO POSTER</text%3E%3C/svg%3E" %}
+
 <!-- Tabs -->
 <ul class="nav nav-tabs nav-tabs-custom mb-4" role="tablist">
     <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tabBorrows"><i class="bi bi-book me-1"></i>ยืมหนังสือ <span class="badge bg-secondary ms-1">{{ borrows|length }}</span></a></li>
@@ -24,8 +27,16 @@
                 <tbody>
                 {% for b in borrows %}
                 <tr>
-                    <td><strong>{{ b.title }}</strong></td>
-                    <td>{{ b.author }}</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="{{ b.cover_image if b.cover_image and b.cover_image.startswith('http') else book_placeholder }}" alt="{{ b.title }}" class="booking-cover rounded-3">
+                            <div>
+                                <strong>{{ b.title }}</strong><br>
+                                <div class="text-secondary small">{{ b.author }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="d-none d-md-table-cell">{{ b.author }}</td>
                     <td>
                         {% if b.due_date %}
                             {% set due_date = b.due_date %}
@@ -151,8 +162,16 @@
                 <tbody>
                 {% for wh in watch_history %}
                 <tr>
-                    <td><strong>{{ wh.title }}</strong></td>
-                    <td><span class="filter-pill" style="cursor:default;font-size:0.7rem;">{{ wh.genre }}</span></td>
+                    <td>
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="{{ wh.poster_image if wh.poster_image and wh.poster_image.startswith('http') else movie_placeholder }}" alt="{{ wh.title }}" class="booking-cover rounded-3">
+                            <div>
+                                <strong>{{ wh.title }}</strong><br>
+                                <div class="text-secondary small">{{ wh.genre }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="d-none d-md-table-cell"><span class="filter-pill" style="cursor:default;font-size:0.7rem;">{{ wh.genre }}</span></td>
                     <td>{% if wh.rating %}<span class="rating"><i class="bi bi-star-fill"></i> {{ wh.rating }}/10</span>{% else %}<span class="text-muted">-</span>{% endif %}</td>
                     <td>{{ wh.watched_at[:16] }}</td>
                 </tr>

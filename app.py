@@ -78,7 +78,7 @@ def create_app():
         db = get_db()
         uid = session['user_id']
         borrows = db.execute('''
-            SELECT br.*, b.title, b.author FROM borrow_requests br
+            SELECT br.*, b.title, b.author, b.cover_image FROM borrow_requests br
             JOIN books b ON b.id=br.book_id WHERE br.user_id=?
             ORDER BY br.created_at DESC
         ''', (uid,)).fetchall()
@@ -95,7 +95,7 @@ def create_app():
             ORDER BY mb.created_at DESC
         ''', (uid,)).fetchall()
         watch_hist = db.execute('''
-            SELECT wh.*, m.title, m.genre FROM watch_history wh
+            SELECT wh.*, m.title, m.genre, m.poster_image FROM watch_history wh
             JOIN movies m ON m.id=wh.movie_id WHERE wh.user_id=?
             ORDER BY wh.watched_at DESC
         ''', (uid,)).fetchall()

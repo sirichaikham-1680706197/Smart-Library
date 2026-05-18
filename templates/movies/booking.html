@@ -7,41 +7,119 @@
 </div>
 
 <div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="glass-card animate-in">
-            <form method="POST" action="{{ url_for('movies.book_room') }}">
-                <div class="mb-3">
-                    <label class="form-label-custom">เลือกภาพยนตร์</label>
-                    <select name="movie_id" class="form-select form-select-custom" required id="movieSelect">
-                        <option value="">-- เลือกภาพยนตร์ --</option>
-                        {% for movie in movies %}
-                        <option value="{{ movie.id }}" data-duration="{{ movie.duration_minutes }}" {% if selected_movie_id == movie.id %}selected{% endif %}>
-                            {{ movie.title }} ({{ movie.duration_minutes }} นาที) ⭐{{ movie.rating }}
-                        </option>
-                        {% endfor %}
-                    </select>
+    <div class="col-lg-10">
+        <div class="row g-4">
+            <div class="col-lg-5">
+                <div class="glass-card animate-in p-4">
+                    <div id="moviePreviewVisual" class="mb-3" style="min-height:220px;display:flex;align-items:center;justify-content:center;">
+                        <div class="card-emoji rounded-3" style="font-size:4rem;min-height:180px;display:flex;align-items:center;justify-content:center;">🎬</div>
+                    </div>
+                    <h3 id="moviePreviewTitle" class="h5 mb-1">เลือกหนังเพื่อดูตัวอย่าง</h3>
+                    <p id="moviePreviewGenre" class="text-secondary mb-2"></p>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span id="moviePreviewRating" class="filter-pill"></span>
+                        <span id="moviePreviewDuration" class="filter-pill"></span>
+                    </div>
+                    <p id="moviePreviewDesc" class="text-secondary small mb-0">ระบบจะแสดงข้อมูลสำคัญเมื่อเลือกหนังในช่องด้านขวา</p>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label-custom">เลือกห้อง</label>
-                    <select name="room_id" class="form-select form-select-custom" required>
-                        <option value="">-- เลือกห้อง --</option>
-                        {% for room in rooms %}
-                        <option value="{{ room.id }}">{{ room.name }} ({{ room.room_type }} — ความจุ {{ room.capacity }} คน)</option>
-                        {% endfor %}
-                    </select>
+            </div>
+            <div class="col-lg-7">
+                <div class="glass-card animate-in">
+                    <form method="POST" action="{{ url_for('movies.book_room') }}">
+                        <div class="mb-3">
+                            <label class="form-label-custom">เลือกภาพยนตร์</label>
+                            <select id="movieSelect" name="movie_id" class="form-select form-select-custom" required>
+                                <option value="">-- เลือกภาพยนตร์ --</option>
+                                {% for movie in movies %}
+                                <option value="{{ movie.id }}"
+                                    data-title="{{ movie.title|e }}"
+                                    data-image="{{ (movie.poster_image or '🎬')|e }}"
+                                    data-genre="{{ (movie.genre or 'ทั่วไป')|e }}"
+                                    data-rating="{{ movie.rating }}"
+                                    data-duration="{{ movie.duration_minutes }}"
+                                    data-description="{{ (movie.description or 'ไม่มีรายละเอียดเพิ่มเติม')|e }}"
+                                    {% if selected_movie_id == movie.id %}selected{% endif %}>
+                                    {{ movie.title }} ({{ movie.duration_minutes }} นาที) ⭐{{ movie.rating }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label-custom">เลือกห้อง</label>
+                            <select name="room_id" class="form-select form-select-custom" required>
+                                <option value="">-- เลือกห้อง --</option>
+                                {% for room in rooms %}
+                                <option value="{{ room.id }}">{{ room.name }} ({{ room.room_type }} — ความจุ {{ room.capacity }} คน)</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label-custom">วันเวลาเริ่มฉาย</label>
+                            <input type="datetime-local" name="start_time" class="form-control form-control-custom" required>
+                        </div>
+                        <div class="glass-card mb-3" style="background:var(--bg-secondary);">
+                            <p class="mb-0 text-secondary"><i class="bi bi-info-circle me-2"></i>ระบบจะคำนวณเวลาสิ้นสุดอัตโนมัติจากความยาวหนัง + 15 นาที (เตรียมห้อง)</p>
+                        </div>
+                        <button type="submit" class="btn btn-primary-custom w-100">
+                            <i class="bi bi-check-circle me-2"></i>ยืนยันการจอง
+                        </button>
+                    </form>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label-custom">วันเวลาเริ่มฉาย</label>
-                    <input type="datetime-local" name="start_time" class="form-control form-control-custom" required>
-                </div>
-                <div class="glass-card mb-3" style="background:var(--bg-secondary);">
-                    <p class="mb-0 text-secondary"><i class="bi bi-info-circle me-2"></i>ระบบจะคำนวณเวลาสิ้นสุดอัตโนมัติจากความยาวหนัง + 15 นาที (เตรียมห้อง)</p>
-                </div>
-                <button type="submit" class="btn btn-primary-custom w-100">
-                    <i class="bi bi-check-circle me-2"></i>ยืนยันการจอง
-                </button>
-            </form>
+            </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const movieSelect = document.getElementById('movieSelect');
+    if (!movieSelect) return;
+
+    const previewVisual = document.getElementById('moviePreviewVisual');
+    const previewTitle = document.getElementById('moviePreviewTitle');
+    const previewGenre = document.getElementById('moviePreviewGenre');
+    const previewRating = document.getElementById('moviePreviewRating');
+    const previewDuration = document.getElementById('moviePreviewDuration');
+    const previewDesc = document.getElementById('moviePreviewDesc');
+
+    function renderPreview(option) {
+        if (!option || !option.value) {
+            previewTitle.textContent = 'เลือกหนังเพื่อดูตัวอย่าง';
+            previewGenre.textContent = '';
+            previewRating.textContent = '';
+            previewDuration.textContent = '';
+            previewDesc.textContent = 'ระบบจะแสดงข้อมูลสำคัญเมื่อเลือกหนังในช่องด้านขวา';
+            previewVisual.innerHTML = '<div class="card-emoji rounded-3" style="font-size:4rem;min-height:180px;display:flex;align-items:center;justify-content:center;">🎬</div>';
+            return;
+        }
+
+        const title = option.dataset.title || option.textContent.trim();
+        const image = option.dataset.image || '🎬';
+        const genre = option.dataset.genre ? `ประเภท: ${option.dataset.genre}` : '';
+        const rating = option.dataset.rating ? `คะแนน: ${option.dataset.rating}` : '';
+        const duration = option.dataset.duration ? `ความยาว ${option.dataset.duration} นาที` : '';
+        const description = option.dataset.description || 'ไม่มีรายละเอียดเพิ่มเติม';
+
+        previewTitle.textContent = title;
+        previewGenre.textContent = genre;
+        previewRating.textContent = rating;
+        previewDuration.textContent = duration;
+        previewDesc.textContent = description;
+
+        if (image.startsWith('http')) {
+            previewVisual.innerHTML = `<img src="${image}" alt="${title}" class="w-100 rounded-3" style="max-height:220px;object-fit:cover;">`;
+        } else {
+            previewVisual.innerHTML = `<div class="card-emoji rounded-3" style="font-size:4rem;min-height:180px;display:flex;align-items:center;justify-content:center;">${image}</div>`;
+        }
+    }
+
+    movieSelect.addEventListener('change', function (event) {
+        renderPreview(event.target.selectedOptions[0]);
+    });
+
+    renderPreview(movieSelect.selectedOptions[0]);
+});
+</script>
 {% endblock %}

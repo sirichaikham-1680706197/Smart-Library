@@ -7,50 +7,123 @@
 </div>
 
 <div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="glass-card animate-in">
-            <form method="POST" action="{{ url_for('games.book_table') }}">
-                <div class="mb-3">
-                    <label class="form-label-custom">เลือกเกม</label>
-                    <select name="game_id" class="form-select form-select-custom" required>
-                        <option value="">-- เลือกเกม --</option>
-                        {% for game in games %}
-                        <option value="{{ game.id }}" {% if selected_game_id == game.id %}selected{% endif %}>
-                            {{ game.name }} ({{ game.min_players }}-{{ game.max_players }} คน)
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label-custom">เลือกโต๊ะ</label>
-                    <select name="table_id" class="form-select form-select-custom" required>
-                        <option value="">-- เลือกโต๊ะ --</option>
-                        {% for table in tables %}
-                        <option value="{{ table.id }}">{{ table.name }} (ความจุ {{ table.capacity }} คน)</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label-custom">วันเวลาเริ่มต้น</label>
-                        <input type="datetime-local" name="start_time" class="form-control form-control-custom" required>
+    <div class="col-lg-10">
+        <div class="row g-4">
+            <div class="col-lg-5">
+                <div class="glass-card animate-in p-4">
+                    <div id="gamePreviewVisual" class="mb-3" style="min-height:220px;display:flex;align-items:center;justify-content:center;">
+                        <div class="card-emoji rounded-3" style="font-size:4rem;min-height:180px;display:flex;align-items:center;justify-content:center;">🎮</div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label-custom">ระยะเวลา (นาที)</label>
-                        <select name="duration" class="form-select form-select-custom">
-                            <option value="30">30 นาที</option>
-                            <option value="60" selected>1 ชั่วโมง</option>
-                            <option value="90">1.5 ชั่วโมง</option>
-                            <option value="120">2 ชั่วโมง</option>
-                            <option value="180">3 ชั่วโมง</option>
-                        </select>
+                    <h3 id="gamePreviewTitle" class="h5 mb-1">เลือกเกมเพื่อดูตัวอย่าง</h3>
+                    <p id="gamePreviewCategory" class="text-secondary mb-2"></p>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span id="gamePreviewPlayers" class="filter-pill"></span>
                     </div>
+                    <p id="gamePreviewDesc" class="text-secondary small mb-0">ระบบจะแสดงข้อมูลสำคัญเมื่อเลือกเกมในช่องด้านขวา</p>
                 </div>
-                <button type="submit" class="btn btn-primary-custom w-100 mt-4">
-                    <i class="bi bi-check-circle me-2"></i>ยืนยันการจอง
-                </button>
-            </form>
+            </div>
+            <div class="col-lg-7">
+                <div class="glass-card animate-in">
+                    <form method="POST" action="{{ url_for('games.book_table') }}">
+                        <div class="mb-3">
+                            <label class="form-label-custom">เลือกเกม</label>
+                            <select id="gameSelect" name="game_id" class="form-select form-select-custom" required>
+                                <option value="">-- เลือกเกม --</option>
+                                {% for game in games %}
+                                <option value="{{ game.id }}"
+                                    data-title="{{ game.name|e }}"
+                                    data-image="{{ (game.image or '🎮')|e }}"
+                                    data-category="{{ (game.category or 'ทั่วไป')|e }}"
+                                    data-min-players="{{ game.min_players }}"
+                                    data-max-players="{{ game.max_players }}"
+                                    data-description="{{ (game.description or 'ไม่มีรายละเอียดเพิ่มเติม')|e }}"
+                                    {% if selected_game_id == game.id %}selected{% endif %}>
+                                    {{ game.name }} ({{ game.min_players }}-{{ game.max_players }} คน)
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label-custom">เลือกโต๊ะ</label>
+                            <select name="table_id" class="form-select form-select-custom" required>
+                                <option value="">-- เลือกโต๊ะ --</option>
+                                {% for table in tables %}
+                                <option value="{{ table.id }}">{{ table.name }} (ความจุ {{ table.capacity }} คน)</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label-custom">วันเวลาเริ่มต้น</label>
+                                <input type="datetime-local" name="start_time" class="form-control form-control-custom" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label-custom">ระยะเวลา (นาที)</label>
+                                <select name="duration" class="form-select form-select-custom">
+                                    <option value="30">30 นาที</option>
+                                    <option value="60" selected>1 ชั่วโมง</option>
+                                    <option value="90">1.5 ชั่วโมง</option>
+                                    <option value="120">2 ชั่วโมง</option>
+                                    <option value="180">3 ชั่วโมง</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary-custom w-100 mt-4">
+                            <i class="bi bi-check-circle me-2"></i>ยืนยันการจอง
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const gameSelect = document.getElementById('gameSelect');
+    if (!gameSelect) return;
+
+    const previewVisual = document.getElementById('gamePreviewVisual');
+    const previewTitle = document.getElementById('gamePreviewTitle');
+    const previewCategory = document.getElementById('gamePreviewCategory');
+    const previewPlayers = document.getElementById('gamePreviewPlayers');
+    const previewDesc = document.getElementById('gamePreviewDesc');
+
+    function renderPreview(option) {
+        if (!option || !option.value) {
+            previewTitle.textContent = 'เลือกเกมเพื่อดูตัวอย่าง';
+            previewCategory.textContent = '';
+            previewPlayers.textContent = '';
+            previewDesc.textContent = 'ระบบจะแสดงข้อมูลสำคัญเมื่อเลือกเกมในช่องด้านขวา';
+            previewVisual.innerHTML = '<div class="card-emoji rounded-3" style="font-size:4rem;min-height:180px;display:flex;align-items:center;justify-content:center;">🎮</div>';
+            return;
+        }
+
+        const title = option.dataset.title || option.textContent.trim();
+        const image = option.dataset.image || '🎮';
+        const category = option.dataset.category ? `ประเภท: ${option.dataset.category}` : '';
+        const players = option.dataset.minPlayers && option.dataset.maxPlayers ? `${option.dataset.minPlayers}-${option.dataset.maxPlayers} คน` : '';
+        const description = option.dataset.description || 'ไม่มีรายละเอียดเพิ่มเติม';
+
+        previewTitle.textContent = title;
+        previewCategory.textContent = category;
+        previewPlayers.textContent = players ? `ผู้เล่น ${players}` : '';
+        previewDesc.textContent = description;
+
+        if (image.startsWith('http')) {
+            previewVisual.innerHTML = `<img src="${image}" alt="${title}" class="w-100 rounded-3" style="max-height:220px;object-fit:cover;">`;
+        } else {
+            previewVisual.innerHTML = `<div class="card-emoji rounded-3" style="font-size:4rem;min-height:180px;display:flex;align-items:center;justify-content:center;">${image}</div>`;
+        }
+    }
+
+    gameSelect.addEventListener('change', function (event) {
+        renderPreview(event.target.selectedOptions[0]);
+    });
+
+    renderPreview(gameSelect.selectedOptions[0]);
+});
+</script>
 {% endblock %}
