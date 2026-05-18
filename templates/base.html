@@ -28,7 +28,7 @@
                     {% if current_user.is_authenticated %}
                     <li class="nav-item"><a class="nav-link {% if request.endpoint == 'my_bookings' %}active{% endif %}" href="{{ url_for('my_bookings') }}"><i class="bi bi-calendar-check me-1"></i>My Bookings</a></li>
                     {% endif %}
-                    {% if current_user.is_admin %}
+                    {% if current_user.is_authenticated and current_user.is_admin %}
                     <li class="nav-item"><a class="nav-link {% if request.endpoint and 'admin' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.dashboard') }}"><i class="bi bi-shield-lock me-1"></i>Admin</a></li>
                     {% endif %}
                 </ul>

@@ -83,7 +83,18 @@
                 <tbody>
                 {% for gb in game_bookings %}
                 <tr>
-                    <td><strong>{{ gb.game_name }}</strong></td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            {% if gb.game_image and gb.game_image.startswith('http') %}
+                                <img src="{{ gb.game_image }}" alt="{{ gb.game_name }}" style="width:60px;height:60px;object-fit:cover;border-radius:10px;">
+                            {% elif gb.game_image %}
+                                <div class="card-emoji" style="font-size:2rem;">{{ gb.game_image }}</div>
+                            {% else %}
+                                <div class="card-emoji" style="font-size:2rem;">🎮</div>
+                            {% endif %}
+                            <strong>{{ gb.game_name }}</strong>
+                        </div>
+                    </td>
                     <td>{{ gb.table_name }}</td>
                     <td>{{ gb.start_time[:16] }} — {{ gb.end_time[11:16] }}</td>
                     <td><span class="badge-status badge-{{ gb.status }}">{{ gb.status }}</span></td>
@@ -106,7 +117,18 @@
                 <tbody>
                 {% for mb in movie_bookings %}
                 <tr>
-                    <td><strong>{{ mb.movie_title }}</strong></td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            {% if mb.movie_image and mb.movie_image.startswith('http') %}
+                                <img src="{{ mb.movie_image }}" alt="{{ mb.movie_title }}" style="width:60px;height:60px;object-fit:cover;border-radius:10px;">
+                            {% elif mb.movie_image %}
+                                <div class="card-emoji" style="font-size:2rem;">{{ mb.movie_image }}</div>
+                            {% else %}
+                                <div class="card-emoji" style="font-size:2rem;">🎬</div>
+                            {% endif %}
+                            <strong>{{ mb.movie_title }}</strong>
+                        </div>
+                    </td>
                     <td>{{ mb.room_name }}</td>
                     <td>{{ mb.start_time[:16] }} — {{ mb.end_time[11:16] }}</td>
                     <td><span class="badge-status badge-{{ mb.status }}">{{ mb.status }}</span></td>

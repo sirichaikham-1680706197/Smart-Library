@@ -59,7 +59,14 @@
                     </form>
                 </td>
             </tr>
-            <div class="modal fade" id="editGame{{ game.id }}" tabindex="-1">
+            {% endfor %}
+            </tbody>
+        </table>
+</div>
+</div>
+
+{% for game in games %}
+<div class="modal fade" id="editGame{{ game.id }}" tabindex="-1">
                 <div class="modal-dialog"><div class="modal-content">
                     <div class="modal-header"><h5 class="modal-title">แก้ไข: {{ game.name }}</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                     <form method="POST" action="{{ url_for('admin.edit_game', gid=game.id) }}">
@@ -75,8 +82,6 @@
                 </div></div>
             </div>
             {% endfor %}
-            </tbody>
-        </table>
     </div>
 </div>
 

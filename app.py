@@ -83,13 +83,13 @@ def create_app():
             ORDER BY br.created_at DESC
         ''', (uid,)).fetchall()
         game_bks = db.execute('''
-            SELECT gb.*, g.name as game_name, t.name as table_name
+            SELECT gb.*, g.name as game_name, g.image as game_image, t.name as table_name
             FROM game_bookings gb JOIN games g ON g.id=gb.game_id
             JOIN tables t ON t.id=gb.table_id WHERE gb.user_id=?
             ORDER BY gb.created_at DESC
         ''', (uid,)).fetchall()
         movie_bks = db.execute('''
-            SELECT mb.*, m.title as movie_title, r.name as room_name, m.duration_minutes
+            SELECT mb.*, m.title as movie_title, m.poster_image as movie_image, r.name as room_name, m.duration_minutes
             FROM movie_bookings mb JOIN movies m ON m.id=mb.movie_id
             JOIN rooms r ON r.id=mb.room_id WHERE mb.user_id=?
             ORDER BY mb.created_at DESC
