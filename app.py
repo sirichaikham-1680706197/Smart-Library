@@ -3,6 +3,7 @@ Smart Digital Library with Game & Movie Booking System
 Main application factory.
 """
 import sqlite3
+from datetime import datetime
 from flask import Flask, render_template, g, session
 from config import Config
 
@@ -55,6 +56,7 @@ def create_app():
     @app.route('/')
     def index():
         db = get_db()
+        
         stats = {
             'books': db.execute('SELECT COUNT(*) as c FROM books').fetchone()['c'],
             'games': db.execute('SELECT COUNT(*) as c FROM games').fetchone()['c'],
@@ -71,37 +73,51 @@ def create_app():
     # ── My Bookings route ──────────────────────────────────
     @app.route('/my-bookings')
     def my_bookings():
+
         if 'user_id' not in session:
             from flask import flash, redirect, url_for
+
             flash('กรุณาเข้าสู่ระบบก่อน', 'warning')
             return redirect(url_for('auth.login'))
+        
         db = get_db()
         uid = session['user_id']
+
+        # ── Borrowed Books ───────────────────────────────
         borrows = db.execute('''
             SELECT br.*, b.title, b.author, b.cover_image FROM borrow_requests br
             JOIN books b ON b.id=br.book_id WHERE br.user_id=?
             ORDER BY br.created_at DESC
         ''', (uid,)).fetchall()
+
+        # ── Game Bookings ────────────────────────────────
         game_bks = db.execute('''
             SELECT gb.*, g.name as game_name, g.image as game_image, t.name as table_name
             FROM game_bookings gb JOIN games g ON g.id=gb.game_id
             JOIN tables t ON t.id=gb.table_id WHERE gb.user_id=?
             ORDER BY gb.created_at DESC
         ''', (uid,)).fetchall()
+
+        # ── Movie Bookings ───────────────────────────────
         movie_bks = db.execute('''
             SELECT mb.*, m.title as movie_title, m.poster_image as movie_image, r.name as room_name, m.duration_minutes
             FROM movie_bookings mb JOIN movies m ON m.id=mb.movie_id
             JOIN rooms r ON r.id=mb.room_id WHERE mb.user_id=?
             ORDER BY mb.created_at DESC
         ''', (uid,)).fetchall()
+
+        # ── Watch History ────────────────────────────────
         watch_hist = db.execute('''
             SELECT wh.*, m.title, m.genre, m.poster_image FROM watch_history wh
             JOIN movies m ON m.id=wh.movie_id WHERE wh.user_id=?
             ORDER BY wh.watched_at DESC
         ''', (uid,)).fetchall()
+
+        # ── Current date for overdue checking ───────────
+        now_str = datetime.now().strftime('%Y-%m-%d')
         return render_template('user/my_bookings.html', borrows=borrows,
                                game_bookings=game_bks, movie_bookings=movie_bks,
-                               watch_history=watch_hist)
+                               watch_history=watch_hist, now_str=now_str)
 
     # Add endpoint alias for my_bookings
     app.add_url_rule('/my-bookings', endpoint='my_bookings')
@@ -113,7 +129,7 @@ def create_app():
 
     return app
 
-
+# ── Run App ───────────────────────────────────────────────
 if __name__ == '__main__':
     app = create_app()
     app.run(debug=True, port=5001)
